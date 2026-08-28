@@ -1,0 +1,10 @@
+{
+  "name": "DailyFlow",
+  "short_name": "DailyFlow",
+  "description": "Controle de gastos diários, metas e projeções de investimento.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0a0d12",
+  "theme_color": "#0a0d12",
+  "icons": [{ "src": "/icon", "sizes": "192x192", "type": "image/png" }]
+}
