@@ -288,11 +288,9 @@ export default function InvestmentPage() {
             <p className="text-sm text-gray-400">Seus gastos estão sob controle hoje. Nenhum alerta pendente!</p>
           </div>
         ) : (
-          <div className="no-scrollbar flex gap-3.5 overflow-x-auto pb-1">
+          <div className="flex flex-col gap-3">
             {insightCards.map((card) => (
-              <div key={card.id} className="w-[290px] shrink-0">
-                <InsightCardView card={card} />
-              </div>
+              <InsightCardView key={card.id} card={card} />
             ))}
           </div>
         )}
