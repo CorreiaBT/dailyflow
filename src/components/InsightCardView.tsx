@@ -2,16 +2,16 @@ import { AlertTriangle, TrendingUp, CheckCircle2 } from "lucide-react";
 import { InsightCard, InsightSeverity } from "@/lib/types";
 
 const SEVERITY_STYLE: Record<InsightSeverity, { color: string; bg: string; border: string; Icon: typeof AlertTriangle }> = {
-  WARNING: { color: "text-[#FC8A80]", bg: "bg-[#FC8A80]/15", border: "border-[#FC8A80]/30", Icon: AlertTriangle },
-  INFO: { color: "text-[#95C68F]", bg: "bg-[#95C68F]/15", border: "border-[#95C68F]/30", Icon: TrendingUp },
-  SUCCESS: { color: "text-[#31827C]", bg: "bg-[#31827C]/15", border: "border-[#31827C]/30", Icon: CheckCircle2 },
+  WARNING: { color: "text-danger", bg: "bg-danger/15", border: "border-danger/30", Icon: AlertTriangle },
+  INFO: { color: "text-secondary", bg: "bg-secondary/15", border: "border-secondary/30", Icon: TrendingUp },
+  SUCCESS: { color: "text-primary", bg: "bg-primary/15", border: "border-primary/30", Icon: CheckCircle2 },
 };
 
 export function InsightCardView({ card }: { card: InsightCard }) {
   const { color, bg, border, Icon } = SEVERITY_STYLE[card.severity];
 
   return (
-    <div className={`flex h-full flex-col gap-3 rounded-[20px] border ${border} bg-[#12141a] p-4 shadow-lg`}>
+    <div className={`flex h-full flex-col gap-3 rounded-[20px] border ${border} bg-surface p-4 shadow-lg`}>
       <div className="flex items-start gap-2">
         <div className={`rounded-full p-2 ${bg}`}>
           <Icon size={16} className={color} strokeWidth={2.5} />

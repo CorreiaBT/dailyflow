@@ -1,7 +1,7 @@
-﻿"use client";
+"use client";
 
-import { useEffect } from "react";
-import { Wifi, ZapOff, RefreshCw } from "lucide-react";
+import { useEffect, useMemo } from "react";
+import { Sparkles, CheckCircle2, Wifi, ZapOff, RefreshCw } from "lucide-react";
 import {
   Area,
   CartesianGrid,
@@ -12,13 +12,18 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
+import { useApp } from "@/lib/context/AppContext";
 import { useMarketData } from "@/lib/hooks/useMarketData";
+import { GoalDashboard } from "@/components/GoalDashboard";
+import { InsightCardView } from "@/components/InsightCardView";
+import { generateInsights } from "@/lib/engines/insights";
 
 function currency(value: number): string {
   return `R$ ${value.toFixed(2)}`;
 }
 
-export default function MarketPage() {
+export default function InvestmentPage() {
+  const app = useApp();
   const m = useMarketData();
 
   useEffect(() => {
@@ -27,6 +32,11 @@ export default function MarketPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const insightCards = useMemo(
+    () => generateInsights(app.dailyExpenses, app.monthlyIncome, app.totalFixedExpenses),
+    [app.dailyExpenses, app.monthlyIncome, app.totalFixedExpenses]
+  );
+
   const chartData = m.projectionPoints.map((p) => ({
     mes: `${p.month}m`,
     "Saldo Total": Math.round(p.totalBalance),
@@ -34,13 +44,17 @@ export default function MarketPage() {
   }));
 
   return (
-    <div className="mx-auto flex max-w-md flex-col gap-5 p-4">
+    <div className="mx-auto flex max-w-md flex-col gap-6 p-4">
+      <h1 className="text-xl font-bold text-white">Projeção de Investimento</h1>
+
+      <GoalDashboard />
+
       {/* CDI / Selic */}
-      <div className="rounded-3xl border border-white/10 bg-[#14161c] p-5">
+      <div className="rounded-3xl border border-white/10 bg-surface p-5">
         <div className="mb-3 flex items-center justify-between">
           <span
             className={`flex items-center gap-1.5 rounded-xl px-2.5 py-1 text-xs font-bold ${
-              m.isFromCache ? "bg-orange-400/15 text-orange-400" : "bg-green-500/15 text-green-400"
+              m.isFromCache ? "bg-danger/15 text-danger" : "bg-primary/15 text-primary"
             }`}
           >
             {m.isFromCache ? <ZapOff size={13} /> : <Wifi size={13} />}
@@ -56,14 +70,14 @@ export default function MarketPage() {
 
         <p className="text-sm text-gray-400">Taxa CDI / Selic de Mercado</p>
         <div className="mb-1 flex items-baseline gap-1.5">
-          <span className="text-4xl font-bold text-green-400">{m.cdiRate.toFixed(2)}%</span>
+          <span className="text-4xl font-bold text-primary">{m.cdiRate.toFixed(2)}%</span>
           <span className="font-semibold text-gray-400">a.a.</span>
         </div>
         <p className="text-xs text-gray-500">Atualizado em: {m.formattedLastUpdated}</p>
-        {m.status.kind === "error" && <p className="mt-1 text-xs text-red-400">{m.status.message}</p>}
+        {m.status.kind === "error" && <p className="mt-1 text-xs text-danger">{m.status.message}</p>}
       </div>
 
-      {/* Gráfico de Projeção */}
+      {/* Gráfico de Projeção Livre */}
       <div className="rounded-3xl bg-white/5 p-5">
         <div className="mb-3 flex items-center justify-between">
           <div>
@@ -72,7 +86,7 @@ export default function MarketPage() {
           </div>
           <div className="text-right">
             <p className="text-xs text-gray-400">Lucro em Juros</p>
-            <p className="font-bold text-green-400">+{currency(m.totalProfit)}</p>
+            <p className="font-bold text-primary">+{currency(m.totalProfit)}</p>
           </div>
         </div>
 
@@ -80,8 +94,8 @@ export default function MarketPage() {
           <ComposedChart data={chartData} margin={{ left: 0, right: 10 }}>
             <defs>
               <linearGradient id="marketArea" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#22c55e" stopOpacity={0.4} />
-                <stop offset="100%" stopColor="#22c55e" stopOpacity={0} />
+                <stop offset="0%" stopColor="#d9b95c" stopOpacity={0.35} />
+                <stop offset="100%" stopColor="#d9b95c" stopOpacity={0} />
               </linearGradient>
             </defs>
             <CartesianGrid strokeDasharray="2 2" stroke="rgba(255,255,255,0.1)" vertical={false} />
@@ -94,14 +108,14 @@ export default function MarketPage() {
               width={48}
             />
             <Tooltip
-              contentStyle={{ background: "#0a0d12", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 12 }}
+              contentStyle={{ background: "#0d0b07", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 12 }}
               formatter={(value) => currency(Number(value))}
             />
-            <Area type="monotone" dataKey="Saldo Total" stroke="#22c55e" strokeWidth={3} fill="url(#marketArea)" />
+            <Area type="monotone" dataKey="Saldo Total" stroke="#d9b95c" strokeWidth={3} fill="url(#marketArea)" />
             <Line
               type="monotone"
               dataKey="Capital Aportado"
-              stroke="#3b82f6"
+              stroke="#9c7a35"
               strokeWidth={2}
               strokeDasharray="4 4"
               dot={false}
@@ -111,10 +125,10 @@ export default function MarketPage() {
 
         <div className="mt-2 flex gap-4 text-xs text-gray-400">
           <span className="flex items-center gap-1.5">
-            <span className="h-2 w-2 rounded-full bg-green-500" /> Montante Total
+            <span className="h-2 w-2 rounded-full bg-primary" /> Montante Total
           </span>
           <span className="flex items-center gap-1.5">
-            <span className="h-2 w-2 rounded-full bg-blue-500" /> Capital Investido
+            <span className="h-2 w-2 rounded-full bg-secondary" /> Capital Investido
           </span>
         </div>
       </div>
@@ -128,7 +142,7 @@ export default function MarketPage() {
           min={100}
           max={20000}
           step={100}
-          accent="accent-green-500"
+          accent="accent-primary"
         />
         <SliderField
           label="Aporte Mensal"
@@ -137,7 +151,7 @@ export default function MarketPage() {
           min={0}
           max={5000}
           step={50}
-          accent="accent-cyan-400"
+          accent="accent-secondary"
         />
         <SliderField
           label="Prazo (Meses)"
@@ -146,7 +160,7 @@ export default function MarketPage() {
           min={6}
           max={60}
           step={6}
-          accent="accent-purple-500"
+          accent="accent-gray-300"
           format={(v) => `${v} meses (${Math.floor(v / 12)} anos)`}
         />
       </div>
@@ -159,17 +173,17 @@ export default function MarketPage() {
             value={m.searchTicker}
             onChange={(e) => m.setSearchTicker(e.target.value.toUpperCase())}
             placeholder="Ex: PETR4, VALE3, HGLG11"
-            className="flex-1 rounded-xl bg-black/40 px-3 py-2.5 text-white outline-none"
+            className="flex-1 rounded-xl bg-black/40 px-3 py-2.5 text-white outline-none focus:ring-2 focus:ring-primary/50"
           />
           <button
             onClick={() => m.fetchStockQuote()}
-            className="rounded-xl bg-green-500 px-4 py-2.5 font-bold text-white hover:bg-green-600"
+            className="rounded-xl bg-primary px-4 py-2.5 font-bold text-black hover:brightness-110"
           >
             Buscar
           </button>
         </div>
 
-        {m.quoteStatus.kind === "error" && <p className="mt-2 text-xs text-red-400">{m.quoteStatus.message}</p>}
+        {m.quoteStatus.kind === "error" && <p className="mt-2 text-xs text-danger">{m.quoteStatus.message}</p>}
 
         {m.currentQuote && (
           <div className="mt-3.5 flex items-center justify-between rounded-2xl bg-white/[0.06] p-3.5">
@@ -183,13 +197,36 @@ export default function MarketPage() {
               </p>
               <p
                 className={`text-xs font-bold ${
-                  (m.currentQuote.regularMarketChangePercent ?? 0) >= 0 ? "text-green-400" : "text-red-400"
+                  (m.currentQuote.regularMarketChangePercent ?? 0) >= 0 ? "text-primary" : "text-danger"
                 }`}
               >
                 {(m.currentQuote.regularMarketChangePercent ?? 0) >= 0 ? "+" : ""}
                 {(m.currentQuote.regularMarketChangePercent ?? 0).toFixed(2)}%
               </p>
             </div>
+          </div>
+        )}
+      </div>
+
+      {/* Feed de Insights */}
+      <div>
+        <div className="mb-3 flex items-center gap-2">
+          <Sparkles size={16} className="text-yellow-400" />
+          <h2 className="font-semibold text-white">Feed de Insights Diários</h2>
+        </div>
+
+        {insightCards.length === 0 ? (
+          <div className="flex items-center gap-2 rounded-2xl bg-white/5 p-4">
+            <CheckCircle2 size={18} className="text-primary" />
+            <p className="text-sm text-gray-400">Seus gastos estão sob controle hoje. Nenhum alerta pendente!</p>
+          </div>
+        ) : (
+          <div className="no-scrollbar flex gap-3.5 overflow-x-auto pb-1">
+            {insightCards.map((card) => (
+              <div key={card.id} className="w-[290px] shrink-0">
+                <InsightCardView card={card} />
+              </div>
+            ))}
           </div>
         )}
       </div>

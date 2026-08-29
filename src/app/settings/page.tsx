@@ -45,8 +45,8 @@ export default function SettingsPage() {
 
       <section className="rounded-3xl bg-white/5 p-5">
         <h2 className="mb-3 text-xs font-bold uppercase tracking-wide text-gray-400">Sua Renda Mensal Total</h2>
-        <div className="flex items-center gap-2 rounded-xl bg-black/40 px-3 py-2.5">
-          <span className="font-bold text-green-400">R$</span>
+        <div className="flex items-center gap-2 rounded-xl bg-black/40 px-3 py-2.5 focus-within:ring-2 focus-within:ring-primary/50">
+          <span className="font-bold text-primary">R$</span>
           <input
             value={incomeText}
             onChange={(e) => setIncomeText(e.target.value)}
@@ -62,8 +62,8 @@ export default function SettingsPage() {
         <h2 className="mb-3 text-xs font-bold uppercase tracking-wide text-gray-400">
           Reserva Mensal Blindada p/ Meta
         </h2>
-        <div className="flex items-center gap-2 rounded-xl bg-black/40 px-3 py-2.5">
-          <span className="font-bold text-purple-400">R$</span>
+        <div className="flex items-center gap-2 rounded-xl bg-black/40 px-3 py-2.5 focus-within:ring-2 focus-within:ring-secondary/50">
+          <span className="font-bold text-secondary">R$</span>
           <input
             value={contributionText}
             onChange={(e) => setContributionText(e.target.value)}
@@ -85,10 +85,10 @@ export default function SettingsPage() {
             <div key={item.id} className="flex items-center justify-between rounded-xl bg-black/30 px-3 py-2.5">
               <span className="text-sm text-white">{item.title}</span>
               <div className="flex items-center gap-3">
-                <span className="text-sm font-semibold text-cyan-400">R$ {item.amount.toFixed(2)}</span>
+                <span className="text-sm font-semibold text-primary">R$ {item.amount.toFixed(2)}</span>
                 <button
                   onClick={() => app.removeFixedExpense(item.id)}
-                  className="text-gray-500 hover:text-red-400"
+                  className="text-gray-500 hover:text-danger"
                   aria-label="Remover"
                 >
                   <Trash2 size={15} />
@@ -106,7 +106,7 @@ export default function SettingsPage() {
             value={newTitle}
             onChange={(e) => setNewTitle(e.target.value)}
             placeholder="Nome (ex: Internet)"
-            className="rounded-xl bg-black/40 px-3 py-2.5 text-white outline-none"
+            className="rounded-xl bg-black/40 px-3 py-2.5 text-white outline-none focus:ring-2 focus:ring-primary/50"
           />
           <div className="flex gap-2">
             <input
@@ -114,11 +114,11 @@ export default function SettingsPage() {
               onChange={(e) => setNewAmount(e.target.value)}
               inputMode="decimal"
               placeholder="Valor R$"
-              className="flex-1 rounded-xl bg-black/40 px-3 py-2.5 text-white outline-none"
+              className="flex-1 rounded-xl bg-black/40 px-3 py-2.5 text-white outline-none focus:ring-2 focus:ring-primary/50"
             />
             <button
               onClick={addFixed}
-              className="rounded-xl bg-green-500/20 px-4 py-2.5 font-bold text-green-400 hover:bg-green-500/30"
+              className="rounded-xl bg-primary/15 px-4 py-2.5 font-bold text-primary hover:bg-primary/25"
             >
               Adicionar
             </button>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Check } from "lucide-react";
 import { EXPENSE_CATEGORIES } from "@/lib/categories";
 
 const KEY_ROWS = [
@@ -38,7 +39,7 @@ export function KeypadModal({ onClose, onConfirm }: KeypadModalProps) {
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 sm:items-center" onClick={onClose}>
       <div
-        className="w-full max-w-md rounded-t-3xl bg-[#14161c] p-6 pb-[calc(env(safe-area-inset-bottom)+1.5rem)] sm:rounded-3xl"
+        className="w-full max-w-md rounded-t-3xl bg-surface p-6 pb-[calc(env(safe-area-inset-bottom)+1.5rem)] sm:rounded-3xl"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="mb-5 flex items-center justify-between">
@@ -49,7 +50,7 @@ export function KeypadModal({ onClose, onConfirm }: KeypadModalProps) {
         </div>
 
         <div className="mb-5 rounded-2xl bg-black/40 py-6 text-center">
-          <span className="text-4xl font-bold text-purple-400">R$ {amountString}</span>
+          <span className="text-4xl font-bold text-white">R$ {amountString}</span>
         </div>
 
         <div className="no-scrollbar mb-5 flex gap-2 overflow-x-auto">
@@ -58,10 +59,10 @@ export function KeypadModal({ onClose, onConfirm }: KeypadModalProps) {
               key={cat.id}
               onClick={() => setSelectedCategory(cat.id)}
               className={`flex shrink-0 items-center gap-1.5 rounded-full px-3.5 py-2 text-xs font-semibold whitespace-nowrap ${
-                selectedCategory === cat.id ? "bg-purple-600 text-white" : "bg-white/10 text-white"
+                selectedCategory === cat.id ? "bg-primary text-black" : "bg-white/10 text-white"
               }`}
             >
-              <span>{cat.emoji}</span>
+              <span className="emoji-tint">{cat.emoji}</span>
               {cat.label}
             </button>
           ))}
@@ -73,7 +74,7 @@ export function KeypadModal({ onClose, onConfirm }: KeypadModalProps) {
               key={`${key}-${i}`}
               onClick={() => handleKey(key)}
               className={`rounded-2xl bg-white/[0.08] py-4 text-xl font-bold ${
-                key === "⌫" ? "text-red-400" : "text-white"
+                key === "⌫" ? "text-danger" : "text-white"
               }`}
             >
               {key}
@@ -83,9 +84,10 @@ export function KeypadModal({ onClose, onConfirm }: KeypadModalProps) {
 
         <button
           onClick={confirm}
-          className="w-full rounded-2xl bg-gradient-to-r from-green-500 to-cyan-500 py-3.5 font-semibold text-white"
+          className="flex w-full items-center justify-center gap-2 rounded-2xl bg-primary py-3.5 font-semibold text-black hover:brightness-110"
         >
-          ⚡ Confirmar Gasto
+          <Check size={18} strokeWidth={2.5} />
+          Confirmar Gasto
         </button>
       </div>
     </div>

@@ -2,14 +2,12 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { Settings as SettingsIcon, Sparkles, CheckCircle2 } from "lucide-react";
+import { Settings as SettingsIcon, Trash2, Receipt } from "lucide-react";
 import { useApp } from "@/lib/context/AppContext";
 import { StatBox } from "@/components/StatBox";
 import { PresetButton } from "@/components/PresetButton";
-import { InsightCardView } from "@/components/InsightCardView";
 import { KeypadModal } from "@/components/KeypadModal";
-import { GoalDashboard } from "@/components/GoalDashboard";
-import { generateInsights } from "@/lib/engines/insights";
+import { categoryById } from "@/lib/categories";
 
 const QUICK_PRESETS = [
   { emoji: "☕", title: "Café", price: "R$ 6,00", amount: 6, category: "coffee" },
@@ -19,43 +17,49 @@ const QUICK_PRESETS = [
   { emoji: "🎟️", title: "Lazer", price: "R$ 40,00", amount: 40, category: "leisure" },
 ];
 
+function isToday(dateIso: string): boolean {
+  const d = new Date(dateIso);
+  const today = new Date();
+  return (
+    d.getFullYear() === today.getFullYear() &&
+    d.getMonth() === today.getMonth() &&
+    d.getDate() === today.getDate()
+  );
+}
+
 export default function HomePage() {
   const app = useApp();
   const [showKeypad, setShowKeypad] = useState(false);
 
-  const insightCards = useMemo(
-    () => generateInsights(app.dailyExpenses, app.monthlyIncome, app.totalFixedExpenses),
-    [app.dailyExpenses, app.monthlyIncome, app.totalFixedExpenses]
+  const todayExpenses = useMemo(
+    () => app.dailyExpenses.filter((e) => isToday(e.date)),
+    [app.dailyExpenses]
   );
 
   return (
-    <div className="mx-auto flex max-w-md flex-col gap-5 p-4">
+    <div className="mx-auto flex max-w-md flex-col gap-6 p-4">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <p className="text-xs font-bold text-gray-400">BEM-VINDO</p>
           <h1 className="text-2xl font-bold text-white">DailyFlow</h1>
         </div>
-        <Link href="/settings" className="rounded-full bg-white/10 p-2.5 text-white">
+        <Link href="/settings" className="rounded-full bg-white/5 p-2.5 text-white">
           <SettingsIcon size={18} />
         </Link>
       </div>
 
-      {/* Hero: Disponível Hoje */}
-      <div className="rounded-[28px] border border-green-500/30 bg-gradient-to-br from-green-500/15 to-[#141a16] p-5">
-        <span className="mb-3 inline-block rounded-xl bg-green-500/20 px-2.5 py-1 text-xs font-bold text-green-400">
-          HOJE
-        </span>
-
-        <p className="text-sm text-gray-400">Disponível para gastar hoje</p>
+      {/* Saldo disponível hoje */}
+      <div className="rounded-3xl border border-white/10 bg-white/5 p-5">
+        <p className="mb-1 text-xs font-bold tracking-wide text-gray-400">DISPONÍVEL PARA GASTAR HOJE</p>
         <div className="mb-3 flex items-baseline gap-1">
-          <span className="text-xl font-bold text-green-400">R$</span>
+          <span className="text-xl font-bold text-primary">R$</span>
           <span className="text-4xl font-bold text-white">{app.remainingTodayAllowance.toFixed(2)}</span>
         </div>
 
-        <div className="mb-3 h-2.5 w-full rounded-full bg-white/10">
+        <div className="mb-3 h-2 w-full rounded-full bg-white/10">
           <div
-            className={`h-2.5 rounded-full ${app.todaySpentRatio > 0.85 ? "bg-orange-400" : "bg-green-500"}`}
+            className={`h-2 rounded-full ${app.todaySpentRatio > 0.85 ? "bg-danger" : "bg-primary"}`}
             style={{ width: `${app.todaySpentRatio * 100}%` }}
           />
         </div>
@@ -67,34 +71,9 @@ export default function HomePage() {
         </div>
       </div>
 
-      <GoalDashboard />
-
-      {/* Feed de Insights */}
-      <div>
-        <div className="mb-3 flex items-center gap-2">
-          <Sparkles size={16} className="text-yellow-400" />
-          <h2 className="font-semibold text-white">Feed de Insights Diários</h2>
-        </div>
-
-        {insightCards.length === 0 ? (
-          <div className="flex items-center gap-2 rounded-2xl bg-white/5 p-4">
-            <CheckCircle2 size={18} className="text-green-400" />
-            <p className="text-sm text-gray-400">Seus gastos estão sob controle hoje. Nenhum alerta pendente!</p>
-          </div>
-        ) : (
-          <div className="no-scrollbar flex gap-3.5 overflow-x-auto pb-1">
-            {insightCards.map((card) => (
-              <div key={card.id} className="w-[290px] shrink-0">
-                <InsightCardView card={card} />
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-
       {/* Lançamento Rápido */}
       <div>
-        <h2 className="mb-3 font-semibold text-white">Lançamento Rápido (1-Toque)</h2>
+        <h2 className="mb-3 font-semibold text-white">Lançamento Rápido</h2>
         <div className="grid grid-cols-3 gap-3">
           {QUICK_PRESETS.map((preset) => (
             <PresetButton
@@ -107,6 +86,53 @@ export default function HomePage() {
           ))}
           <PresetButton emoji="🔢" title="Teclado" price="Qualquer R$" onClick={() => setShowKeypad(true)} />
         </div>
+      </div>
+
+      {/* Compras de Hoje */}
+      <div>
+        <h2 className="mb-3 font-semibold text-white">Compras de Hoje</h2>
+
+        {todayExpenses.length === 0 ? (
+          <div className="flex flex-col items-center gap-2 rounded-2xl bg-white/5 py-8 text-center">
+            <Receipt size={22} className="text-gray-500" />
+            <p className="text-sm text-gray-500">Nenhuma compra registrada hoje.</p>
+          </div>
+        ) : (
+          <div className="flex flex-col gap-2">
+            {todayExpenses.map((expense) => {
+              const category = categoryById(expense.category);
+              return (
+                <div
+                  key={expense.id}
+                  className="flex items-center justify-between rounded-2xl bg-white/5 px-3.5 py-3"
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="emoji-tint text-xl">{expense.emoji}</span>
+                    <div>
+                      <p className="text-sm font-medium text-white">{expense.note || category.label}</p>
+                      <p className="text-[11px] text-gray-500">
+                        {new Date(expense.date).toLocaleTimeString("pt-BR", {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <span className="text-sm font-semibold text-white">R$ {expense.amount.toFixed(2)}</span>
+                    <button
+                      onClick={() => app.removeDailyExpense(expense.id)}
+                      className="text-gray-600 hover:text-danger"
+                      aria-label="Remover"
+                    >
+                      <Trash2 size={15} />
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       {showKeypad && (
