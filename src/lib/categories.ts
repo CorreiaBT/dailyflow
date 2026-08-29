@@ -13,7 +13,6 @@ export const DEFAULT_EXPENSE_CATEGORIES: ExpenseCategoryDef[] = [
   { id: "transport", label: "Transporte", emoji: "🚗", isFlexible: true, monthlyBudgetLimit: 300 },
   { id: "emergency", label: "Farmácia", emoji: "💊", isFlexible: false, monthlyBudgetLimit: 0 },
   { id: "leisure", label: "Lazer", emoji: "🎟️", isFlexible: true, monthlyBudgetLimit: 400 },
-  { id: "other", label: "Outros", emoji: "🛍️", isFlexible: true, monthlyBudgetLimit: 0 },
 ];
 
 const FALLBACK_CATEGORY: ExpenseCategoryDef = {
