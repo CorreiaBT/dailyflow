@@ -44,28 +44,22 @@ export function GoalDashboard() {
     <div className="flex flex-col gap-4">
       {/* Card da Meta */}
       <div className="rounded-3xl border border-white/10 bg-white/5 p-5">
-        <div className="mb-3.5 flex items-center justify-between">
-          <h2 className="flex items-center gap-2 font-semibold text-white">
-            <span className="emoji-tint">🎯</span> Meta & Investimentos
+        <div className="mb-1 flex items-center justify-between gap-2">
+          <h2 className="flex min-w-0 items-center gap-2 font-semibold text-white">
+            <span className="emoji-tint shrink-0">🎯</span>
+            <span className="truncate">{app.goalTitle}</span>
           </h2>
           <button
             onClick={() => setShowEditGoal(true)}
-            className="text-xs font-bold text-secondary hover:brightness-110"
+            className="shrink-0 text-xs font-bold text-secondary hover:brightness-110"
           >
             Configurar
           </button>
         </div>
-
-        <div className="mb-4 flex items-center gap-3">
-          <span className="emoji-tint rounded-2xl bg-white/5 p-2.5 text-3xl">🎯</span>
-          <div>
-            <p className="font-bold text-white">{app.goalTitle}</p>
-            <p>
-              <span className="text-lg font-bold text-secondary">{currency(app.currentSaved)}</span>{" "}
-              <span className="text-xs text-gray-400">de {currency(app.targetAmount)}</span>
-            </p>
-          </div>
-        </div>
+        <p className="mb-4">
+          <span className="text-lg font-bold text-secondary">{currency(app.currentSaved)}</span>{" "}
+          <span className="text-xs text-gray-400">de {currency(app.targetAmount)}</span>
+        </p>
 
         <div className="mb-4 h-2 w-full rounded-full bg-white/10">
           <div className="h-2 rounded-full bg-secondary" style={{ width: `${progressRatio * 100}%` }} />
