@@ -10,6 +10,7 @@ import { KeypadModal } from "@/components/KeypadModal";
 import { ManageCategoriesModal } from "@/components/ManageCategoriesModal";
 import { categoryById } from "@/lib/categories";
 import { formatCurrency, formatNumberBRL } from "@/lib/currency";
+import { Logo } from "@/components/Logo";
 
 function isToday(dateIso: string): boolean {
   const d = new Date(dateIso);
@@ -36,12 +37,7 @@ export default function HomePage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div
-            aria-hidden
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-primary/15 text-sm font-extrabold tracking-tight text-primary"
-          >
-            R$
-          </div>
+          <Logo />
           <div>
             <p className="text-xs font-bold text-gray-400">BEM-VINDO</p>
             <h1 className="text-2xl font-bold text-white">DailyFlow</h1>
