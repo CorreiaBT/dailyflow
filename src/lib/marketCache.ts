@@ -5,11 +5,6 @@ interface CachedItem<T> {
 
 export const CDI_CACHE_KEY = "market_cache_cdi_rate";
 export const CDI_MAX_AGE_MS = 24 * 3600 * 1000;
-export const QUOTE_MAX_AGE_MS = 3600 * 1000;
-
-export function quoteCacheKey(ticker: string): string {
-  return `market_cache_b3_${ticker.toLowerCase()}`;
-}
 
 export function getCached<T>(key: string): CachedItem<T> | null {
   try {

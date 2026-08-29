@@ -50,19 +50,6 @@ export interface ProjectionPoint {
   interestEarned: number;
 }
 
-export interface StockQuote {
-  symbol: string;
-  shortName?: string;
-  longName?: string;
-  currency?: string;
-  regularMarketPrice?: number;
-  regularMarketDayHigh?: number;
-  regularMarketDayLow?: number;
-  regularMarketChangePercent?: number;
-  regularMarketTime?: string;
-  logourl?: string;
-}
-
 export type FetchStatus =
   | { kind: "idle" }
   | { kind: "loading" }
