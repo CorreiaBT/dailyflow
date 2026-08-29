@@ -35,9 +35,17 @@ export default function HomePage() {
     <div className="mx-auto flex max-w-md flex-col gap-6 p-4">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <div>
-          <p className="text-xs font-bold text-gray-400">BEM-VINDO</p>
-          <h1 className="text-2xl font-bold text-white">DailyFlow</h1>
+        <div className="flex items-center gap-3">
+          <div
+            aria-hidden
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-primary/15 text-sm font-extrabold tracking-tight text-primary"
+          >
+            R$
+          </div>
+          <div>
+            <p className="text-xs font-bold text-gray-400">BEM-VINDO</p>
+            <h1 className="text-2xl font-bold text-white">DailyFlow</h1>
+          </div>
         </div>
         <Link href="/settings" className="rounded-full bg-white/5 p-2.5 text-white">
           <SettingsIcon size={18} />
