@@ -6,7 +6,8 @@ export interface ExpenseCategoryDef {
   monthlyBudgetLimit: number;
 }
 
-export const EXPENSE_CATEGORIES: ExpenseCategoryDef[] = [
+/** Conjunto inicial de categorias — usado apenas para semear o estado na primeira execução. */
+export const DEFAULT_EXPENSE_CATEGORIES: ExpenseCategoryDef[] = [
   { id: "coffee", label: "Café / Snack", emoji: "☕", isFlexible: true, monthlyBudgetLimit: 150 },
   { id: "food", label: "Alimentação", emoji: "🍔", isFlexible: true, monthlyBudgetLimit: 600 },
   { id: "transport", label: "Transporte", emoji: "🚗", isFlexible: true, monthlyBudgetLimit: 300 },
@@ -15,6 +16,14 @@ export const EXPENSE_CATEGORIES: ExpenseCategoryDef[] = [
   { id: "other", label: "Outros", emoji: "🛍️", isFlexible: true, monthlyBudgetLimit: 0 },
 ];
 
-export function categoryById(id: string): ExpenseCategoryDef {
-  return EXPENSE_CATEGORIES.find((c) => c.id === id) ?? EXPENSE_CATEGORIES[EXPENSE_CATEGORIES.length - 1];
+const FALLBACK_CATEGORY: ExpenseCategoryDef = {
+  id: "other",
+  label: "Outros",
+  emoji: "🛍️",
+  isFlexible: true,
+  monthlyBudgetLimit: 0,
+};
+
+export function categoryById(categories: ExpenseCategoryDef[], id: string): ExpenseCategoryDef {
+  return categories.find((c) => c.id === id) ?? categories[categories.length - 1] ?? FALLBACK_CATEGORY;
 }

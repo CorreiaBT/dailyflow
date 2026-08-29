@@ -1,5 +1,5 @@
 import { DailyExpense } from "@/lib/types";
-import { categoryById } from "@/lib/categories";
+import { categoryById, ExpenseCategoryDef } from "@/lib/categories";
 
 const MONTH_LABELS = [
   "Janeiro",
@@ -48,7 +48,10 @@ export interface CategoryTotal {
  * Agrupa os gastos (já filtrados por mês) por categoria e ordena do maior para o menor.
  * Gastos fixos não entram aqui pois vivem numa lista separada (FixedExpense).
  */
-export function categoryBreakdown(expenses: DailyExpense[]): CategoryTotal[] {
+export function categoryBreakdown(
+  expenses: DailyExpense[],
+  categories: ExpenseCategoryDef[]
+): CategoryTotal[] {
   const totals = new Map<string, number>();
   for (const e of expenses) {
     totals.set(e.category, (totals.get(e.category) ?? 0) + e.amount);
@@ -58,7 +61,7 @@ export function categoryBreakdown(expenses: DailyExpense[]): CategoryTotal[] {
 
   return Array.from(totals.entries())
     .map(([categoryId, total]) => {
-      const category = categoryById(categoryId);
+      const category = categoryById(categories, categoryId);
       return {
         categoryId,
         label: category.label,

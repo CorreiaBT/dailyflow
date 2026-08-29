@@ -9,7 +9,7 @@ import {
   ReactNode,
 } from "react";
 import { DailyExpense, FixedExpense, InvestmentAssetType } from "@/lib/types";
-import { categoryById } from "@/lib/categories";
+import { categoryById, DEFAULT_EXPENSE_CATEGORIES, ExpenseCategoryDef } from "@/lib/categories";
 
 const STORAGE_KEY = "dailyflow_state_v1";
 
@@ -18,6 +18,7 @@ interface PersistedState {
   monthlyGoalContribution: number;
   fixedExpenses: FixedExpense[];
   dailyExpenses: DailyExpense[];
+  categories: ExpenseCategoryDef[];
   goalTitle: string;
   targetAmount: number;
   currentSaved: number;
@@ -35,6 +36,7 @@ const defaultState: PersistedState = {
     { id: "seed-fixed-3", title: "Assinaturas & Cartão Fixo", amount: 350, dueDate: 1 },
   ],
   dailyExpenses: [] as DailyExpense[],
+  categories: DEFAULT_EXPENSE_CATEGORIES,
   goalTitle: "Reserva de Emergência",
   targetAmount: 50000,
   currentSaved: 5000,
@@ -48,6 +50,8 @@ interface AppContextValue extends PersistedState {
   removeFixedExpense: (id: string) => void;
   addDailyExpense: (amount: number, categoryId: string, note?: string) => void;
   removeDailyExpense: (id: string) => void;
+  addCategory: (label: string, emoji: string) => void;
+  removeCategory: (id: string) => void;
   setGoal: (goal: { title: string; targetAmount: number; currentSaved: number }) => void;
   setSelectedAsset: (asset: InvestmentAssetType) => void;
 
@@ -84,8 +88,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
     // renderização do cliente fiquem idênticas e não gerem mismatch.
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
+      // Faz merge com o defaultState para preencher campos novos (ex:
+      // categories) que ainda não existiam num estado salvo mais antigo.
       // eslint-disable-next-line react-hooks/set-state-in-effect
-      if (raw) setState(JSON.parse(raw));
+      if (raw) setState((s) => ({ ...s, ...JSON.parse(raw) }));
     } catch {
       // ignore corrupted storage
     }
@@ -149,7 +155,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
             id: crypto.randomUUID(),
             amount,
             category: categoryId,
-            emoji: categoryById(categoryId).emoji,
+            emoji: categoryById(s.categories, categoryId).emoji,
             note,
             date: new Date().toISOString(),
           },
@@ -159,6 +165,18 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
     removeDailyExpense: (id) =>
       setState((s) => ({ ...s, dailyExpenses: s.dailyExpenses.filter((e) => e.id !== id) })),
+
+    addCategory: (label, emoji) =>
+      setState((s) => ({
+        ...s,
+        categories: [
+          ...s.categories,
+          { id: crypto.randomUUID(), label, emoji, isFlexible: true, monthlyBudgetLimit: 0 },
+        ],
+      })),
+
+    removeCategory: (id) =>
+      setState((s) => ({ ...s, categories: s.categories.filter((c) => c.id !== id) })),
 
     setGoal: ({ title, targetAmount, currentSaved }) =>
       setState((s) => ({ ...s, goalTitle: title, targetAmount, currentSaved })),

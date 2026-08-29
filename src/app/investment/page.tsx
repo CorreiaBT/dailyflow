@@ -37,18 +37,18 @@ export default function InvestmentPage() {
   }, []);
 
   const fallbackCards = useMemo(
-    () => generateInsights(app.dailyExpenses, app.monthlyIncome, app.totalFixedExpenses),
-    [app.dailyExpenses, app.monthlyIncome, app.totalFixedExpenses]
+    () => generateInsights(app.dailyExpenses, app.categories, app.monthlyIncome, app.totalFixedExpenses),
+    [app.dailyExpenses, app.categories, app.monthlyIncome, app.totalFixedExpenses]
   );
 
   const asset = INVESTMENT_ASSETS[app.selectedAsset];
   const monthCategoryTotals = useMemo(
     () =>
-      categoryBreakdown(expensesInMonth(app.dailyExpenses, monthKey(new Date()))).map((c) => ({
+      categoryBreakdown(expensesInMonth(app.dailyExpenses, monthKey(new Date())), app.categories).map((c) => ({
         label: c.label,
         total: c.total,
       })),
-    [app.dailyExpenses]
+    [app.dailyExpenses, app.categories]
   );
 
   const advisorInput: AdvisorInput = {

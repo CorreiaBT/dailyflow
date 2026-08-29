@@ -1,5 +1,5 @@
 import { DailyExpense, InsightCard, InsightSeverity } from "@/lib/types";
-import { EXPENSE_CATEGORIES } from "@/lib/categories";
+import { ExpenseCategoryDef } from "@/lib/categories";
 
 const SEVERITY_PRIORITY: Record<InsightSeverity, number> = {
   WARNING: 3,
@@ -23,14 +23,15 @@ function daysInMonth(date: Date): number {
  */
 export function generateInsights(
   expenses: DailyExpense[],
+  categories: ExpenseCategoryDef[],
   income: number,
   fixedExpensesTotal: number,
   annualCDIRate = 0.105,
   currentDate = new Date()
 ): InsightCard[] {
   const cards: InsightCard[] = [
-    ...calculateMoMAnomalies(expenses, currentDate),
-    ...calculateBudgetPacing(expenses, currentDate),
+    ...calculateMoMAnomalies(expenses, categories, currentDate),
+    ...calculateBudgetPacing(expenses, categories, currentDate),
   ];
 
   const investmentCard = calculateInvestmentProjection(
@@ -48,7 +49,11 @@ export function generateInsights(
 }
 
 // 1. Anomalia MoM (dia 1 até d vs mesmo período do mês anterior)
-function calculateMoMAnomalies(expenses: DailyExpense[], currentDate: Date): InsightCard[] {
+function calculateMoMAnomalies(
+  expenses: DailyExpense[],
+  categories: ExpenseCategoryDef[],
+  currentDate: Date
+): InsightCard[] {
   const currentDay = currentDate.getDate();
   const currentMonth = currentDate.getMonth();
   const currentYear = currentDate.getFullYear();
@@ -58,7 +63,7 @@ function calculateMoMAnomalies(expenses: DailyExpense[], currentDate: Date): Ins
   const prevYear = prevMonthDate.getFullYear();
 
   const cards: InsightCard[] = [];
-  const flexibleCategories = EXPENSE_CATEGORIES.filter((c) => c.isFlexible);
+  const flexibleCategories = categories.filter((c) => c.isFlexible);
 
   for (const category of flexibleCategories) {
     const currentPeriodSpend = expenses
@@ -107,7 +112,11 @@ function calculateMoMAnomalies(expenses: DailyExpense[], currentDate: Date): Ins
 }
 
 // 2. Ritmo de gastos & metas (budget pacing com média móvel de 7 dias)
-function calculateBudgetPacing(expenses: DailyExpense[], currentDate: Date): InsightCard[] {
+function calculateBudgetPacing(
+  expenses: DailyExpense[],
+  categories: ExpenseCategoryDef[],
+  currentDate: Date
+): InsightCard[] {
   const currentDay = currentDate.getDate();
   const currentMonth = currentDate.getMonth();
   const currentYear = currentDate.getFullYear();
@@ -120,7 +129,7 @@ function calculateBudgetPacing(expenses: DailyExpense[], currentDate: Date): Ins
 
   const cards: InsightCard[] = [];
 
-  for (const category of EXPENSE_CATEGORIES.filter((c) => c.monthlyBudgetLimit > 0)) {
+  for (const category of categories.filter((c) => c.monthlyBudgetLimit > 0)) {
     const accumulatedSpend = expenses
       .filter((e) => {
         const d = new Date(e.date);

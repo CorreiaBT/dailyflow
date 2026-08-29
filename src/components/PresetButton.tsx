@@ -1,11 +1,11 @@
 interface PresetButtonProps {
   emoji: string;
   title: string;
-  price: string;
+  subtitle?: string;
   onClick: () => void;
 }
 
-export function PresetButton({ emoji, title, price, onClick }: PresetButtonProps) {
+export function PresetButton({ emoji, title, subtitle, onClick }: PresetButtonProps) {
   return (
     <button
       onClick={onClick}
@@ -13,7 +13,7 @@ export function PresetButton({ emoji, title, price, onClick }: PresetButtonProps
     >
       <span className="emoji-tint text-2xl">{emoji}</span>
       <span className="text-xs font-semibold text-white">{title}</span>
-      <span className="text-[10px] text-gray-400">{price}</span>
+      {subtitle && <span className="text-[10px] text-gray-400">{subtitle}</span>}
     </button>
   );
 }

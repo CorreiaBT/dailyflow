@@ -7,15 +7,8 @@ import { useApp } from "@/lib/context/AppContext";
 import { StatBox } from "@/components/StatBox";
 import { PresetButton } from "@/components/PresetButton";
 import { KeypadModal } from "@/components/KeypadModal";
+import { ManageCategoriesModal } from "@/components/ManageCategoriesModal";
 import { categoryById } from "@/lib/categories";
-
-const QUICK_PRESETS = [
-  { emoji: "☕", title: "Café", price: "R$ 6,00", amount: 6, category: "coffee" },
-  { emoji: "🍔", title: "Lanche", price: "R$ 18,00", amount: 18, category: "food" },
-  { emoji: "🚗", title: "Uber", price: "R$ 22,00", amount: 22, category: "transport" },
-  { emoji: "💊", title: "Farmácia", price: "R$ 35,00", amount: 35, category: "emergency" },
-  { emoji: "🎟️", title: "Lazer", price: "R$ 40,00", amount: 40, category: "leisure" },
-];
 
 function isToday(dateIso: string): boolean {
   const d = new Date(dateIso);
@@ -29,7 +22,8 @@ function isToday(dateIso: string): boolean {
 
 export default function HomePage() {
   const app = useApp();
-  const [showKeypad, setShowKeypad] = useState(false);
+  const [keypadCategoryId, setKeypadCategoryId] = useState<string | null>(null);
+  const [showManageCategories, setShowManageCategories] = useState(false);
 
   const todayExpenses = useMemo(
     () => app.dailyExpenses.filter((e) => isToday(e.date)),
@@ -75,16 +69,15 @@ export default function HomePage() {
       <div>
         <h2 className="mb-3 font-semibold text-white">Lançamento Rápido</h2>
         <div className="grid grid-cols-3 gap-3">
-          {QUICK_PRESETS.map((preset) => (
+          {app.categories.map((cat) => (
             <PresetButton
-              key={preset.title}
-              emoji={preset.emoji}
-              title={preset.title}
-              price={preset.price}
-              onClick={() => app.addDailyExpense(preset.amount, preset.category)}
+              key={cat.id}
+              emoji={cat.emoji}
+              title={cat.label}
+              onClick={() => setKeypadCategoryId(cat.id)}
             />
           ))}
-          <PresetButton emoji="🔢" title="Teclado" price="Qualquer R$" onClick={() => setShowKeypad(true)} />
+          <PresetButton emoji="➕" title="Adicionar categoria" onClick={() => setShowManageCategories(true)} />
         </div>
       </div>
 
@@ -100,7 +93,7 @@ export default function HomePage() {
         ) : (
           <div className="flex flex-col gap-2">
             {todayExpenses.map((expense) => {
-              const category = categoryById(expense.category);
+              const category = categoryById(app.categories, expense.category);
               return (
                 <div
                   key={expense.id}
@@ -135,12 +128,16 @@ export default function HomePage() {
         )}
       </div>
 
-      {showKeypad && (
+      {keypadCategoryId && (
         <KeypadModal
-          onClose={() => setShowKeypad(false)}
+          categories={app.categories}
+          initialCategoryId={keypadCategoryId}
+          onClose={() => setKeypadCategoryId(null)}
           onConfirm={(amount, categoryId) => app.addDailyExpense(amount, categoryId)}
         />
       )}
+
+      {showManageCategories && <ManageCategoriesModal onClose={() => setShowManageCategories(false)} />}
     </div>
   );
 }

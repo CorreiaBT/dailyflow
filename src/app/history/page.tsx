@@ -15,7 +15,10 @@ export default function HistoryPage() {
     [app.dailyExpenses, selectedMonth]
   );
 
-  const breakdown = useMemo(() => categoryBreakdown(monthExpenses), [monthExpenses]);
+  const breakdown = useMemo(
+    () => categoryBreakdown(monthExpenses, app.categories),
+    [monthExpenses, app.categories]
+  );
   const monthTotal = monthExpenses.reduce((sum, e) => sum + e.amount, 0);
   const isCurrentMonth = selectedMonth === currentMonthKey;
 

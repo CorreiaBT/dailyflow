@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Check } from "lucide-react";
-import { EXPENSE_CATEGORIES } from "@/lib/categories";
+import { ExpenseCategoryDef } from "@/lib/categories";
 
 const KEY_ROWS = [
   ["1", "2", "3"],
@@ -12,13 +12,15 @@ const KEY_ROWS = [
 ];
 
 interface KeypadModalProps {
+  categories: ExpenseCategoryDef[];
+  initialCategoryId?: string;
   onClose: () => void;
   onConfirm: (amount: number, categoryId: string) => void;
 }
 
-export function KeypadModal({ onClose, onConfirm }: KeypadModalProps) {
+export function KeypadModal({ categories, initialCategoryId, onClose, onConfirm }: KeypadModalProps) {
   const [amountString, setAmountString] = useState("0");
-  const [selectedCategory, setSelectedCategory] = useState(EXPENSE_CATEGORIES[0].id);
+  const [selectedCategory, setSelectedCategory] = useState(initialCategoryId ?? categories[0]?.id ?? "");
 
   function handleKey(key: string) {
     if (key === "⌫") {
@@ -30,14 +32,14 @@ export function KeypadModal({ onClose, onConfirm }: KeypadModalProps) {
 
   function confirm() {
     const value = Number(amountString);
-    if (value > 0) {
+    if (value > 0 && selectedCategory) {
       onConfirm(value, selectedCategory);
       onClose();
     }
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 sm:items-center" onClick={onClose}>
+    <div className="fixed inset-0 z-[60] flex items-end justify-center bg-black/60 sm:items-center" onClick={onClose}>
       <div
         className="w-full max-w-md rounded-t-3xl bg-surface p-6 pb-[calc(env(safe-area-inset-bottom)+1.5rem)] sm:rounded-3xl"
         onClick={(e) => e.stopPropagation()}
@@ -54,7 +56,7 @@ export function KeypadModal({ onClose, onConfirm }: KeypadModalProps) {
         </div>
 
         <div className="no-scrollbar mb-5 flex gap-2 overflow-x-auto">
-          {EXPENSE_CATEGORIES.map((cat) => (
+          {categories.map((cat) => (
             <button
               key={cat.id}
               onClick={() => setSelectedCategory(cat.id)}
@@ -84,7 +86,8 @@ export function KeypadModal({ onClose, onConfirm }: KeypadModalProps) {
 
         <button
           onClick={confirm}
-          className="flex w-full items-center justify-center gap-2 rounded-2xl bg-primary py-3.5 font-semibold text-black hover:brightness-110"
+          disabled={!selectedCategory}
+          className="flex w-full items-center justify-center gap-2 rounded-2xl bg-primary py-3.5 font-semibold text-black hover:brightness-110 disabled:opacity-40"
         >
           <Check size={18} strokeWidth={2.5} />
           Confirmar Gasto
