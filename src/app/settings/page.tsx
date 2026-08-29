@@ -13,13 +13,13 @@ export default function SettingsPage() {
   const [newAmount, setNewAmount] = useState("");
 
   useEffect(() => {
-    // Sincroniza os campos de texto com o valor hidratado do localStorage
-    // (que só fica disponível após o primeiro render no cliente).
+    // Sincroniza os campos de texto sempre que o valor de fundo mudar (hidratação
+    // do localStorage, ou uma importação de backup) — não só na montagem, senão
+    // um backup importado fica sem refletir nos campos até recarregar a página.
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setIncomeText(app.monthlyIncome.toFixed(2));
     setContributionText(app.monthlyGoalContribution.toFixed(2));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [app.monthlyIncome, app.monthlyGoalContribution]);
 
   function saveIncome() {
     const value = Number(incomeText);
@@ -113,6 +113,18 @@ export default function SettingsPage() {
     URL.revokeObjectURL(url);
   }
 
+  function isValidBackup(data: unknown): boolean {
+    if (typeof data !== "object" || data === null) return false;
+    const d = data as Record<string, unknown>;
+    return (
+      Array.isArray(d.dailyExpenses) &&
+      Array.isArray(d.fixedExpenses) &&
+      Array.isArray(d.categories) &&
+      typeof d.monthlyIncome === "number" &&
+      typeof d.monthlyGoalContribution === "number"
+    );
+  }
+
   function importBackup(e: ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -120,6 +132,10 @@ export default function SettingsPage() {
     reader.onload = () => {
       try {
         const data = JSON.parse(String(reader.result));
+        if (!isValidBackup(data)) {
+          alert("Esse arquivo não parece ser um backup válido do DailyFlow.");
+          return;
+        }
         if (!confirm("Isso vai substituir todos os dados atuais pelos dados desse backup. Continuar?")) return;
         app.importData(data);
         alert("Backup importado com sucesso!");

@@ -24,5 +24,5 @@ const FALLBACK_CATEGORY: ExpenseCategoryDef = {
 };
 
 export function categoryById(categories: ExpenseCategoryDef[], id: string): ExpenseCategoryDef {
-  return categories.find((c) => c.id === id) ?? categories[categories.length - 1] ?? FALLBACK_CATEGORY;
+  return categories.find((c) => c.id === id) ?? FALLBACK_CATEGORY;
 }
