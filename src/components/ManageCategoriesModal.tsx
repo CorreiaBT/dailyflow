@@ -14,10 +14,24 @@ export function ManageCategoriesModal({ onClose }: { onClose: () => void }) {
 
   function handleAdd() {
     if (label.trim() && emoji.trim()) {
-      app.addCategory(label.trim(), emoji.trim(), Number(budget) || 0);
+      app.addCategory(label.trim(), emoji.trim(), Number(budget.replace(",", ".")) || 0);
       setLabel("");
       setBudget("");
     }
+  }
+
+  function handleRemove(id: string, categoryLabel: string) {
+    // Gastos já lançados nessa categoria não somem, mas passam a aparecer como
+    // "Outros" no histórico — melhor avisar antes de excluir.
+    const used = app.dailyExpenses.filter((e) => e.category === id).length;
+    if (used > 0) {
+      const plural = used === 1 ? "1 gasto lançado" : `${used} gastos lançados`;
+      const ok = confirm(
+        `A categoria "${categoryLabel}" tem ${plural}. Se excluir, esses lançamentos continuam no histórico, mas passam a aparecer como "Outros". Excluir mesmo assim?`
+      );
+      if (!ok) return;
+    }
+    app.removeCategory(id);
   }
 
   return (
@@ -53,7 +67,7 @@ export function ManageCategoriesModal({ onClose }: { onClose: () => void }) {
                   />
                 </div>
                 <button
-                  onClick={() => app.removeCategory(cat.id)}
+                  onClick={() => handleRemove(cat.id, cat.label)}
                   className="text-gray-600 hover:text-danger"
                   aria-label={`Excluir categoria ${cat.label}`}
                 >
@@ -82,7 +96,7 @@ export function ManageCategoriesModal({ onClose }: { onClose: () => void }) {
             value={label}
             onChange={(e) => setLabel(e.target.value)}
             placeholder="Nome (ex: Pet)"
-            className="flex-1 rounded-xl bg-black/40 px-3 py-2.5 text-white outline-none focus:ring-2 focus:ring-primary/50"
+            className="min-w-0 flex-1 rounded-xl bg-black/40 px-3 py-2.5 text-white outline-none focus:ring-2 focus:ring-primary/50"
           />
         </div>
         <input

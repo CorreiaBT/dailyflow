@@ -9,7 +9,7 @@ import { GoalDashboard } from "@/components/GoalDashboard";
 import { InsightCardView } from "@/components/InsightCardView";
 import { generateInsights } from "@/lib/engines/insights";
 import { categoryBreakdown, expensesInMonth, monthKey } from "@/lib/history";
-import { INVESTMENT_ASSETS } from "@/lib/types";
+import { assetById } from "@/lib/types";
 
 function currency(value: number): string {
   return `R$ ${value.toFixed(2)}`;
@@ -30,7 +30,7 @@ export default function InvestmentPage() {
     [app.dailyExpenses, app.categories, app.monthlyIncome, app.totalFixedExpenses]
   );
 
-  const asset = INVESTMENT_ASSETS[app.selectedAsset];
+  const asset = assetById(app.selectedAsset);
 
   const now = new Date();
   const monthExpenses = useMemo(
@@ -79,10 +79,14 @@ export default function InvestmentPage() {
     categoryBreakdown: monthCategoryTotals,
   };
 
+  // Só consulta o consultor depois que os dados salvos foram lidos: efeitos de
+  // filhos rodam antes dos do AppProvider, então disparar no mount analisaria
+  // (e cachearia por 12h) os valores iniciais em vez dos dados reais.
   useEffect(() => {
+    if (!app.hydrated) return;
     advisor.fetchTips(advisorInput);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [app.hydrated]);
 
   const usingAi = advisor.status === "success" && advisor.tips !== null;
   const insightCards = usingAi ? advisor.tips! : fallbackCards;

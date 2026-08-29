@@ -1,4 +1,4 @@
-export type InvestmentAssetType = "cdb" | "ipca" | "fiis" | "stocks";
+export type InvestmentAssetType = "cdb" | "ipca" | "fiis";
 
 export interface AssetInfo {
   id: InvestmentAssetType;
@@ -11,10 +11,20 @@ export const INVESTMENT_ASSETS: Record<InvestmentAssetType, AssetInfo> = {
   cdb: { id: "cdb", label: "CDB 100% CDI", emoji: "🛡️", annualRatePct: 10.5 },
   ipca: { id: "ipca", label: "Tesouro IPCA+", emoji: "📈", annualRatePct: 12.2 },
   fiis: { id: "fiis", label: "Fundos Imobiliários", emoji: "🏢", annualRatePct: 11.2 },
-  stocks: { id: "stocks", label: "Ações B3", emoji: "🚀", annualRatePct: 14.5 },
 };
 
-export const ASSET_ORDER: InvestmentAssetType[] = ["cdb", "ipca", "fiis", "stocks"];
+export const ASSET_ORDER: InvestmentAssetType[] = ["cdb", "ipca", "fiis"];
+
+export const DEFAULT_ASSET: InvestmentAssetType = "cdb";
+
+/**
+ * Acessor tolerante a dados antigos: um estado salvo no localStorage pode
+ * apontar para um ativo que não existe mais (ex: "stocks", removido), o que
+ * quebraria a página ao ler `.label` de undefined.
+ */
+export function assetById(id: string): AssetInfo {
+  return INVESTMENT_ASSETS[id as InvestmentAssetType] ?? INVESTMENT_ASSETS[DEFAULT_ASSET];
+}
 
 export interface DailyExpense {
   id: string;

@@ -84,17 +84,46 @@ export async function POST(request: NextRequest) {
     }
 
     const json = await res.json();
-    const text: string | undefined = json.candidates?.[0]?.content?.parts?.[0]?.text;
+    const parts: { text?: string }[] = json.candidates?.[0]?.content?.parts ?? [];
+    const text = parts.map((p) => p.text ?? "").join("").trim();
     if (!text) throw new Error("Resposta vazia da Gemini.");
 
-    const tips: AdvisorTip[] = JSON.parse(text);
-    return NextResponse.json({ tips: tips.slice(0, 3) });
+    const parsed: unknown = JSON.parse(text);
+    if (!Array.isArray(parsed)) throw new Error("Formato inesperado retornado pela Gemini.");
+
+    const tips = parsed.filter(isValidTip).map(normalizeTip).slice(0, 3);
+    if (tips.length === 0) throw new Error("Nenhuma dica utilizável retornada pela Gemini.");
+
+    return NextResponse.json({ tips });
   } catch (err) {
     return NextResponse.json(
       { error: err instanceof Error ? err.message : "Erro desconhecido ao consultar a Gemini." },
       { status: 502 }
     );
   }
+}
+
+const VALID_SEVERITIES: AdvisorTip["severity"][] = ["WARNING", "INFO", "SUCCESS"];
+
+function isValidTip(tip: unknown): tip is Record<string, unknown> {
+  if (typeof tip !== "object" || tip === null) return false;
+  const t = tip as Record<string, unknown>;
+  return typeof t.title === "string" && t.title.trim() !== "" && typeof t.message === "string";
+}
+
+/** Garante que a severidade caia sempre num valor conhecido pela UI. */
+function normalizeTip(tip: Record<string, unknown>): AdvisorTip {
+  const raw = typeof tip.severity === "string" ? tip.severity.toUpperCase() : "";
+  const severity = (VALID_SEVERITIES as string[]).includes(raw)
+    ? (raw as AdvisorTip["severity"])
+    : "INFO";
+
+  return {
+    title: String(tip.title),
+    message: String(tip.message),
+    severity,
+    highlightedValue: typeof tip.highlightedValue === "string" ? tip.highlightedValue : undefined,
+  };
 }
 
 function currency(value: number): string {

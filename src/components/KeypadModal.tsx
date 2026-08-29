@@ -8,8 +8,16 @@ const KEY_ROWS = [
   ["1", "2", "3"],
   ["4", "5", "6"],
   ["7", "8", "9"],
-  ["00", "0", "⌫"],
+  [",", "0", "⌫"],
 ];
+
+const MAX_INTEGER_DIGITS = 7;
+
+/** Converte o texto digitado (padrão brasileiro, com vírgula) em número. */
+function parseAmount(text: string): number {
+  const value = Number(text.replace(",", "."));
+  return Number.isFinite(value) ? value : 0;
+}
 
 interface KeypadModalProps {
   categories: ExpenseCategoryDef[];
@@ -22,20 +30,30 @@ export function KeypadModal({ categories, initialCategoryId, onClose, onConfirm 
   const [amountString, setAmountString] = useState("0");
   const [selectedCategory, setSelectedCategory] = useState(initialCategoryId ?? categories[0]?.id ?? "");
 
+  const amount = parseAmount(amountString);
+  const canConfirm = amount > 0 && selectedCategory !== "";
+
   function handleKey(key: string) {
-    if (key === "⌫") {
-      setAmountString((prev) => (prev.length > 1 ? prev.slice(0, -1) : "0"));
-    } else {
-      setAmountString((prev) => (prev === "0" ? key : prev + key));
-    }
+    setAmountString((prev) => {
+      if (key === "⌫") return prev.length > 1 ? prev.slice(0, -1) : "0";
+
+      if (key === ",") return prev.includes(",") ? prev : `${prev},`;
+
+      const [integerPart, decimalPart] = prev.split(",");
+      // No máximo 2 casas decimais, e um teto de dígitos para o valor não
+      // estourar visualmente o campo.
+      if (decimalPart !== undefined) {
+        return decimalPart.length >= 2 ? prev : prev + key;
+      }
+      if (prev === "0") return key;
+      return integerPart.length >= MAX_INTEGER_DIGITS ? prev : prev + key;
+    });
   }
 
   function confirm() {
-    const value = Number(amountString);
-    if (value > 0 && selectedCategory) {
-      onConfirm(value, selectedCategory);
-      onClose();
-    }
+    if (!canConfirm) return;
+    onConfirm(amount, selectedCategory);
+    onClose();
   }
 
   return (
@@ -75,6 +93,7 @@ export function KeypadModal({ categories, initialCategoryId, onClose, onConfirm 
             <button
               key={`${key}-${i}`}
               onClick={() => handleKey(key)}
+              aria-label={key === "⌫" ? "Apagar último dígito" : key === "," ? "Vírgula decimal" : key}
               className={`rounded-2xl bg-white/[0.08] py-4 text-xl font-bold ${
                 key === "⌫" ? "text-danger" : "text-white"
               }`}
@@ -86,7 +105,7 @@ export function KeypadModal({ categories, initialCategoryId, onClose, onConfirm 
 
         <button
           onClick={confirm}
-          disabled={!selectedCategory}
+          disabled={!canConfirm}
           className="flex w-full items-center justify-center gap-2 rounded-2xl bg-primary py-3.5 font-semibold text-black hover:brightness-110 disabled:opacity-40"
         >
           <Check size={18} strokeWidth={2.5} />

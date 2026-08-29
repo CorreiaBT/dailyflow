@@ -10,6 +10,7 @@ import {
 } from "react";
 import { DailyExpense, FixedExpense, InvestmentAssetType } from "@/lib/types";
 import { categoryById, DEFAULT_EXPENSE_CATEGORIES, ExpenseCategoryDef } from "@/lib/categories";
+import { newId } from "@/lib/id";
 
 const STORAGE_KEY = "dailyflow_state_v1";
 
@@ -63,6 +64,14 @@ interface AppContextValue extends PersistedState {
   todaySpentTotal: number;
   remainingTodayAllowance: number;
   todaySpentRatio: number;
+
+  /**
+   * false até o estado salvo ser lido do localStorage. Efeitos de filhos rodam
+   * antes dos do provider, então quem consome os dados para chamar uma API
+   * (ex: o consultor de IA) precisa esperar isso virar true — senão analisaria
+   * os valores iniciais em vez dos dados reais do usuário.
+   */
+  hydrated: boolean;
 }
 
 const AppContext = createContext<AppContextValue | null>(null);
@@ -136,6 +145,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     todaySpentTotal,
     remainingTodayAllowance,
     todaySpentRatio,
+    hydrated,
 
     setMonthlyIncome: (v) => setState((s) => ({ ...s, monthlyIncome: v })),
     setMonthlyGoalContribution: (v) => setState((s) => ({ ...s, monthlyGoalContribution: v })),
@@ -143,7 +153,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     addFixedExpense: (title, amount) =>
       setState((s) => ({
         ...s,
-        fixedExpenses: [...s.fixedExpenses, { id: crypto.randomUUID(), title, amount, dueDate: 1 }],
+        fixedExpenses: [...s.fixedExpenses, { id: newId(), title, amount, dueDate: 1 }],
       })),
 
     removeFixedExpense: (id) =>
@@ -154,7 +164,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         ...s,
         dailyExpenses: [
           {
-            id: crypto.randomUUID(),
+            id: newId(),
             amount,
             category: categoryId,
             emoji: categoryById(s.categories, categoryId).emoji,
@@ -173,7 +183,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         ...s,
         categories: [
           ...s.categories,
-          { id: crypto.randomUUID(), label, emoji, isFlexible: true, monthlyBudgetLimit },
+          { id: newId(), label, emoji, isFlexible: true, monthlyBudgetLimit },
         ],
       })),
 

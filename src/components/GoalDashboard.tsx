@@ -13,7 +13,7 @@ import {
   YAxis,
 } from "recharts";
 import { useApp } from "@/lib/context/AppContext";
-import { ASSET_ORDER, INVESTMENT_ASSETS, InvestmentAssetType } from "@/lib/types";
+import { ASSET_ORDER, INVESTMENT_ASSETS, InvestmentAssetType, assetById } from "@/lib/types";
 import { calculateTimeAndYield, generateProjection } from "@/lib/engines/projection";
 
 function currency(value: number): string {
@@ -25,7 +25,7 @@ export function GoalDashboard() {
   const [showEditGoal, setShowEditGoal] = useState(false);
 
   const progressRatio = app.targetAmount > 0 ? Math.min(1, app.currentSaved / app.targetAmount) : 0;
-  const asset = INVESTMENT_ASSETS[app.selectedAsset];
+  const asset = assetById(app.selectedAsset);
 
   const monthlyFreeSavings = app.monthlyFreeBudget - app.todaySpentTotal;
   const result = useMemo(
@@ -75,7 +75,7 @@ export function GoalDashboard() {
         </div>
 
         <p className="mb-2 text-[10px] font-bold tracking-wide text-gray-400">SELECIONE O TIPO DE INVESTIMENTO</p>
-        <div className="mb-4 grid grid-cols-2 gap-2.5">
+        <div className="mb-4 grid grid-cols-3 gap-2.5">
           {ASSET_ORDER.map((assetId: InvestmentAssetType) => {
             const info = INVESTMENT_ASSETS[assetId];
             const selected = app.selectedAsset === assetId;
@@ -83,6 +83,7 @@ export function GoalDashboard() {
               <button
                 key={assetId}
                 onClick={() => app.setSelectedAsset(assetId)}
+                aria-pressed={selected}
                 className={`rounded-2xl border p-2.5 text-left ${
                   selected ? "border-secondary bg-secondary/15" : "border-white/10 bg-white/5"
                 }`}
@@ -91,7 +92,7 @@ export function GoalDashboard() {
                   <span className="emoji-tint">{info.emoji}</span>
                   {selected && <CheckCircle2 size={14} className="text-secondary" />}
                 </div>
-                <p className="text-xs font-bold text-white">{info.label}</p>
+                <p className="text-xs font-bold leading-tight text-white">{info.label}</p>
                 <p className="text-[11px] font-bold text-primary">{info.annualRatePct.toFixed(1)}% a.a.</p>
               </button>
             );

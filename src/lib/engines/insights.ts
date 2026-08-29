@@ -1,5 +1,6 @@
 import { DailyExpense, InsightCard, InsightSeverity } from "@/lib/types";
 import { ExpenseCategoryDef } from "@/lib/categories";
+import { newId } from "@/lib/id";
 
 const SEVERITY_PRIORITY: Record<InsightSeverity, number> = {
   WARNING: 3,
@@ -97,7 +98,7 @@ function calculateMoMAnomalies(
         const formattedDiff = fmtCurrency(currentPeriodSpend - prevPeriodSpend);
 
         cards.push({
-          id: crypto.randomUUID(),
+          id: newId(),
           title: `Alerta de Anomalia: ${category.label}`,
           message: `Você gastou ${formattedVariation} a mais do dia 1 ao dia ${currentDay} em comparação ao mesmo período do mês passado (${formattedDiff} adicionais).`,
           highlightedValue: formattedVariation,
@@ -155,7 +156,7 @@ function calculateBudgetPacing(
       const formattedLimit = fmtCurrency(safeDailyLimit);
 
       cards.push({
-        id: crypto.randomUUID(),
+        id: newId(),
         title: `Ritmo Acima da Meta: ${category.label}`,
         message: `Sua média móvel nos últimos 7 dias (R$ ${movingAvg7Days.toFixed(2)}/dia) excede seu teto seguro de ${formattedLimit}/dia. Reduza cerca de ${formattedCut}/dia para não estourar o mês.`,
         highlightedValue: `Corte -${formattedCut}/dia`,
@@ -197,7 +198,7 @@ function calculateInvestmentProjection(
   const profit = futureValue - principal;
 
   return {
-    id: crypto.randomUUID(),
+    id: newId(),
     title: "Oportunidade de Investimento",
     message: `Se você aportar o saldo livre atual (${fmtCurrency(principal)}) em 100% do CDI hoje, renderá cerca de +${fmtCurrency(
       profit

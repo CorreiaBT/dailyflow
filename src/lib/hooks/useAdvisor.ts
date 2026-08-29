@@ -3,6 +3,7 @@
 import { useCallback, useState } from "react";
 import { InsightCard, InsightSeverity } from "@/lib/types";
 import { getCached, isExpired, setCached } from "@/lib/marketCache";
+import { newId } from "@/lib/id";
 
 const ADVISOR_CACHE_KEY = "advisor_cache_tips";
 const ADVISOR_CACHE_MAX_AGE_MS = 12 * 3600 * 1000; // 12 horas
@@ -38,7 +39,7 @@ interface RawTip {
 
 function toInsightCards(tips: RawTip[]): InsightCard[] {
   return tips.map((t) => ({
-    id: crypto.randomUUID(),
+    id: newId(),
     title: t.title,
     message: t.message,
     severity: t.severity,

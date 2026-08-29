@@ -21,14 +21,28 @@ export default function SettingsPage() {
     setContributionText(app.monthlyGoalContribution.toFixed(2));
   }, [app.monthlyIncome, app.monthlyGoalContribution]);
 
+  /**
+   * Converte o texto do campo em valor válido. Retorna null quando não dá para
+   * interpretar (campo vazio, texto solto, negativo) — nesses casos o valor
+   * salvo é mantido em vez de virar zero sem querer.
+   */
+  function parseMoney(text: string): number | null {
+    const normalized = text.trim().replace(",", ".");
+    if (normalized === "") return null;
+    const value = Number(normalized);
+    return Number.isFinite(value) && value >= 0 ? value : null;
+  }
+
   function saveIncome() {
-    const value = Number(incomeText);
-    if (!Number.isNaN(value)) app.setMonthlyIncome(value);
+    const value = parseMoney(incomeText);
+    if (value === null) setIncomeText(app.monthlyIncome.toFixed(2));
+    else app.setMonthlyIncome(value);
   }
 
   function saveContribution() {
-    const value = Number(contributionText);
-    if (!Number.isNaN(value)) app.setMonthlyGoalContribution(value);
+    const value = parseMoney(contributionText);
+    if (value === null) setContributionText(app.monthlyGoalContribution.toFixed(2));
+    else app.setMonthlyGoalContribution(value);
   }
 
   function addFixed() {
@@ -222,7 +236,7 @@ export default function SettingsPage() {
               onChange={(e) => setNewAmount(e.target.value)}
               inputMode="decimal"
               placeholder="Valor R$"
-              className="flex-1 rounded-xl bg-black/40 px-3 py-2.5 text-white outline-none focus:ring-2 focus:ring-primary/50"
+              className="min-w-0 flex-1 rounded-xl bg-black/40 px-3 py-2.5 text-white outline-none focus:ring-2 focus:ring-primary/50"
             />
             <button
               onClick={addFixed}

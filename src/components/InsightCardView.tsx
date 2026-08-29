@@ -8,7 +8,9 @@ const SEVERITY_STYLE: Record<InsightSeverity, { color: string; bg: string; borde
 };
 
 export function InsightCardView({ card }: { card: InsightCard }) {
-  const { color, bg, border, Icon } = SEVERITY_STYLE[card.severity];
+  // A severidade pode vir da IA; um valor fora do esperado quebraria a página
+  // inteira na renderização, então cai no estilo neutro.
+  const { color, bg, border, Icon } = SEVERITY_STYLE[card.severity] ?? SEVERITY_STYLE.INFO;
 
   return (
     <div className={`flex h-full flex-col gap-3 rounded-[20px] border ${border} bg-surface p-4 shadow-lg`}>
