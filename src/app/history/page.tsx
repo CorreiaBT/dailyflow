@@ -6,6 +6,7 @@ import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxi
 import { useApp } from "@/lib/context/AppContext";
 import { categoryById } from "@/lib/categories";
 import { categoryBreakdown, expensesInMonth, formatMonthLabel, monthKey, monthlyTotals, shiftMonth } from "@/lib/history";
+import { formatCurrency, formatNumberBRL } from "@/lib/currency";
 
 export default function HistoryPage() {
   const app = useApp();
@@ -60,7 +61,7 @@ export default function HistoryPage() {
         <p className="text-xs font-bold tracking-wide text-gray-400">TOTAL GASTO NO MÊS</p>
         <div className="mb-1 flex items-baseline gap-1">
           <span className="text-xl font-bold text-primary">R$</span>
-          <span className="text-4xl font-bold text-white">{monthTotal.toFixed(2)}</span>
+          <span className="text-4xl font-bold text-white">{formatNumberBRL(monthTotal)}</span>
         </div>
         <p className="text-xs text-gray-500">
           {monthExpenses.length} {monthExpenses.length === 1 ? "compra" : "compras"} · não inclui gastos fixos
@@ -83,7 +84,7 @@ export default function HistoryPage() {
             />
             <Tooltip
               contentStyle={{ background: "#0d0b07", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 12 }}
-              formatter={(value) => `R$ ${Number(value).toFixed(2)}`}
+              formatter={(value) => formatCurrency(Number(value))}
               cursor={{ fill: "rgba(255,255,255,0.05)" }}
             />
             <Bar dataKey="total" fill="#d9b95c" radius={[6, 6, 0, 0]} />
@@ -114,7 +115,7 @@ export default function HistoryPage() {
                     </div>
                     <div className="flex items-baseline gap-2">
                       <span className="text-xs text-gray-500">{(cat.ratio * 100).toFixed(0)}%</span>
-                      <span className="text-sm font-semibold text-white">R$ {cat.total.toFixed(2)}</span>
+                      <span className="text-sm font-semibold text-white">{formatCurrency(cat.total)}</span>
                     </div>
                   </div>
                   <div className="h-1.5 w-full rounded-full bg-white/10">
@@ -125,7 +126,7 @@ export default function HistoryPage() {
                   </div>
                   {limit > 0 && (
                     <p className={`mt-1 text-[11px] ${overBudget ? "text-danger" : "text-gray-500"}`}>
-                      {overBudget ? "Acima" : "Dentro"} do limite mensal de R$ {limit.toFixed(2)}
+                      {overBudget ? "Acima" : "Dentro"} do limite mensal de {formatCurrency(limit)}
                     </p>
                   )}
                 </div>
@@ -157,7 +158,7 @@ export default function HistoryPage() {
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
-                  <span className="text-sm font-semibold text-white">R$ {expense.amount.toFixed(2)}</span>
+                  <span className="text-sm font-semibold text-white">{formatCurrency(expense.amount)}</span>
                   <button
                     onClick={() => app.removeDailyExpense(expense.id)}
                     className="text-gray-600 hover:text-danger"

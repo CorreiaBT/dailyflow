@@ -9,6 +9,7 @@ import { PresetButton } from "@/components/PresetButton";
 import { KeypadModal } from "@/components/KeypadModal";
 import { ManageCategoriesModal } from "@/components/ManageCategoriesModal";
 import { categoryById } from "@/lib/categories";
+import { formatCurrency, formatNumberBRL } from "@/lib/currency";
 
 function isToday(dateIso: string): boolean {
   const d = new Date(dateIso);
@@ -48,7 +49,7 @@ export default function HomePage() {
         <p className="mb-1 text-xs font-bold tracking-wide text-gray-400">DISPONÍVEL PARA GASTAR HOJE</p>
         <div className="mb-3 flex items-baseline gap-1">
           <span className="text-xl font-bold text-primary">R$</span>
-          <span className="text-4xl font-bold text-white">{app.remainingTodayAllowance.toFixed(2)}</span>
+          <span className="text-4xl font-bold text-white">{formatNumberBRL(app.remainingTodayAllowance)}</span>
         </div>
 
         <div className="mb-3 h-2 w-full rounded-full bg-white/10">
@@ -59,9 +60,9 @@ export default function HomePage() {
         </div>
 
         <div className="flex gap-3">
-          <StatBox title="Teto Diário" value={`R$ ${app.idealDailyAllowance.toFixed(2)}`} />
-          <StatBox title="Gasto Hoje" value={`R$ ${app.todaySpentTotal.toFixed(2)}`} isWarning />
-          <StatBox title="Livre no Mês" value={`R$ ${app.monthlyFreeBudget.toFixed(2)}`} />
+          <StatBox title="Teto Diário" value={formatCurrency(app.idealDailyAllowance)} />
+          <StatBox title="Gasto Hoje" value={formatCurrency(app.todaySpentTotal)} isWarning />
+          <StatBox title="Livre no Mês" value={formatCurrency(app.monthlyFreeBudget)} />
         </div>
       </div>
 
@@ -112,7 +113,7 @@ export default function HomePage() {
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
-                    <span className="text-sm font-semibold text-white">R$ {expense.amount.toFixed(2)}</span>
+                    <span className="text-sm font-semibold text-white">{formatCurrency(expense.amount)}</span>
                     <button
                       onClick={() => app.removeDailyExpense(expense.id)}
                       className="text-gray-600 hover:text-danger"

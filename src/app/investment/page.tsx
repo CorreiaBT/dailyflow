@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo } from "react";
-import { Sparkles, CheckCircle2, Wifi, ZapOff, RefreshCw, LoaderCircle } from "lucide-react";
+import { Sparkles, CheckCircle2, RefreshCw, LoaderCircle } from "lucide-react";
 import { useApp } from "@/lib/context/AppContext";
 import { useMarketData } from "@/lib/hooks/useMarketData";
 import { useAdvisor, AdvisorInput } from "@/lib/hooks/useAdvisor";
@@ -10,10 +10,7 @@ import { InsightCardView } from "@/components/InsightCardView";
 import { generateInsights } from "@/lib/engines/insights";
 import { categoryBreakdown, expensesInMonth, monthKey } from "@/lib/history";
 import { assetById } from "@/lib/types";
-
-function currency(value: number): string {
-  return `R$ ${value.toFixed(2)}`;
-}
+import { formatCurrency as currency } from "@/lib/currency";
 
 export default function InvestmentPage() {
   const app = useApp();
@@ -119,34 +116,6 @@ export default function InvestmentPage() {
       </div>
 
       <GoalDashboard />
-
-      {/* CDI / Selic */}
-      <div className="rounded-3xl border border-white/10 bg-surface p-5">
-        <div className="mb-3 flex items-center justify-between">
-          <span
-            className={`flex items-center gap-1.5 rounded-xl px-2.5 py-1 text-xs font-bold ${
-              m.isFromCache ? "bg-danger/15 text-danger" : "bg-primary/15 text-primary"
-            }`}
-          >
-            {m.isFromCache ? <ZapOff size={13} /> : <Wifi size={13} />}
-            {m.isFromCache ? "Cache Offline (24h)" : "Conectado ao BCB"}
-          </span>
-          <button
-            onClick={() => m.loadCDIRate()}
-            className="rounded-full bg-white/10 p-2 text-white hover:bg-white/20"
-          >
-            <RefreshCw size={16} />
-          </button>
-        </div>
-
-        <p className="text-sm text-gray-400">Taxa CDI / Selic de Mercado</p>
-        <div className="mb-1 flex items-baseline gap-1.5">
-          <span className="text-4xl font-bold text-primary">{m.cdiRate.toFixed(2)}%</span>
-          <span className="font-semibold text-gray-400">a.a.</span>
-        </div>
-        <p className="text-xs text-gray-500">Atualizado em: {m.formattedLastUpdated}</p>
-        {m.status.kind === "error" && <p className="mt-1 text-xs text-danger">{m.status.message}</p>}
-      </div>
 
       {/* Consultor de Investimentos */}
       <div>

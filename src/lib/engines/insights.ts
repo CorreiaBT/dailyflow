@@ -1,16 +1,13 @@
 import { DailyExpense, InsightCard, InsightSeverity } from "@/lib/types";
 import { ExpenseCategoryDef } from "@/lib/categories";
 import { newId } from "@/lib/id";
+import { formatCurrency as fmtCurrency } from "@/lib/currency";
 
 const SEVERITY_PRIORITY: Record<InsightSeverity, number> = {
   WARNING: 3,
   INFO: 2,
   SUCCESS: 1,
 };
-
-function fmtCurrency(value: number): string {
-  return `R$ ${value.toFixed(2)}`;
-}
 
 function daysInMonth(date: Date): number {
   return new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
@@ -158,7 +155,7 @@ function calculateBudgetPacing(
       cards.push({
         id: newId(),
         title: `Ritmo Acima da Meta: ${category.label}`,
-        message: `Sua média móvel nos últimos 7 dias (R$ ${movingAvg7Days.toFixed(2)}/dia) excede seu teto seguro de ${formattedLimit}/dia. Reduza cerca de ${formattedCut}/dia para não estourar o mês.`,
+        message: `Sua média móvel nos últimos 7 dias (${fmtCurrency(movingAvg7Days)}/dia) excede seu teto seguro de ${formattedLimit}/dia. Reduza cerca de ${formattedCut}/dia para não estourar o mês.`,
         highlightedValue: `Corte -${formattedCut}/dia`,
         severity: "WARNING",
         categoryName: category.label,

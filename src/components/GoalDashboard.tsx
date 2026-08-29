@@ -15,10 +15,7 @@ import {
 import { useApp } from "@/lib/context/AppContext";
 import { ASSET_ORDER, INVESTMENT_ASSETS, InvestmentAssetType, assetById } from "@/lib/types";
 import { calculateTimeAndYield, generateProjection } from "@/lib/engines/projection";
-
-function currency(value: number): string {
-  return `R$ ${value.toFixed(2)}`;
-}
+import { formatCurrency as currency, formatNumberBRL, parseCurrencyInput } from "@/lib/currency";
 
 export function GoalDashboard() {
   const app = useApp();
@@ -152,14 +149,14 @@ export function GoalDashboard() {
 function EditGoalSheet({ onClose }: { onClose: () => void }) {
   const app = useApp();
   const [title, setTitle] = useState(app.goalTitle);
-  const [target, setTarget] = useState(String(app.targetAmount));
-  const [current, setCurrent] = useState(String(app.currentSaved));
+  const [target, setTarget] = useState(formatNumberBRL(app.targetAmount));
+  const [current, setCurrent] = useState(formatNumberBRL(app.currentSaved));
 
   function save() {
     app.setGoal({
       title,
-      targetAmount: Number(target) || app.targetAmount,
-      currentSaved: Number(current) || app.currentSaved,
+      targetAmount: parseCurrencyInput(target) ?? app.targetAmount,
+      currentSaved: parseCurrencyInput(current) ?? app.currentSaved,
     });
     onClose();
   }

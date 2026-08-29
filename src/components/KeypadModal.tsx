@@ -19,6 +19,13 @@ function parseAmount(text: string): number {
   return Number.isFinite(value) ? value : 0;
 }
 
+/** Exibe o valor digitado já com separador de milhar, sem afetar o que está sendo digitado. */
+function formatTyped(text: string): string {
+  const [integerPart, decimalPart] = text.split(",");
+  const withThousands = Number(integerPart || "0").toLocaleString("pt-BR");
+  return decimalPart !== undefined ? `${withThousands},${decimalPart}` : withThousands;
+}
+
 interface KeypadModalProps {
   categories: ExpenseCategoryDef[];
   initialCategoryId?: string;
@@ -70,7 +77,7 @@ export function KeypadModal({ categories, initialCategoryId, onClose, onConfirm 
         </div>
 
         <div className="mb-5 rounded-2xl bg-black/40 py-6 text-center">
-          <span className="text-4xl font-bold text-white">R$ {amountString}</span>
+          <span className="text-4xl font-bold text-white">R${formatTyped(amountString)}</span>
         </div>
 
         <div className="no-scrollbar mb-5 flex gap-2 overflow-x-auto">

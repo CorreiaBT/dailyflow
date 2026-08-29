@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Trash2 } from "lucide-react";
 import { useApp } from "@/lib/context/AppContext";
+import { formatNumberBRL, parseCurrencyInput } from "@/lib/currency";
 
 const EMOJI_SUGGESTIONS = ["🛒", "🐾", "🎮", "📚", "💇", "🏋️", "🚌", "🎁", "🏠", "👕", "🍺", "📱"];
 
@@ -14,7 +15,7 @@ export function ManageCategoriesModal({ onClose }: { onClose: () => void }) {
 
   function handleAdd() {
     if (label.trim() && emoji.trim()) {
-      app.addCategory(label.trim(), emoji.trim(), Number(budget.replace(",", ".")) || 0);
+      app.addCategory(label.trim(), emoji.trim(), parseCurrencyInput(budget) ?? 0);
       setLabel("");
       setBudget("");
     }
@@ -59,11 +60,11 @@ export function ManageCategoriesModal({ onClose }: { onClose: () => void }) {
                   <span className="text-[10px] text-gray-500">R$</span>
                   <input
                     key={`${cat.id}-${cat.monthlyBudgetLimit}`}
-                    defaultValue={cat.monthlyBudgetLimit > 0 ? cat.monthlyBudgetLimit : ""}
-                    onBlur={(e) => app.setCategoryBudget(cat.id, Number(e.target.value) || 0)}
+                    defaultValue={cat.monthlyBudgetLimit > 0 ? formatNumberBRL(cat.monthlyBudgetLimit) : ""}
+                    onBlur={(e) => app.setCategoryBudget(cat.id, parseCurrencyInput(e.target.value) ?? 0)}
                     inputMode="decimal"
                     placeholder="sem limite"
-                    className="w-16 bg-transparent text-right text-xs text-white outline-none placeholder:text-gray-600"
+                    className="w-20 bg-transparent text-right text-xs text-white outline-none placeholder:text-gray-600"
                   />
                 </div>
                 <button

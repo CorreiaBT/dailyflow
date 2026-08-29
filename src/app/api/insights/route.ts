@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { formatCurrency as currency } from "@/lib/currency";
 
 const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-3.6-flash";
 const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
@@ -124,10 +125,6 @@ function normalizeTip(tip: Record<string, unknown>): AdvisorTip {
     severity,
     highlightedValue: typeof tip.highlightedValue === "string" ? tip.highlightedValue : undefined,
   };
-}
-
-function currency(value: number): string {
-  return `R$ ${value.toFixed(2)}`;
 }
 
 function buildPrompt(data: AdvisorRequest): string {

@@ -4,6 +4,7 @@ import { ChangeEvent, useEffect, useState } from "react";
 import { Trash2 } from "lucide-react";
 import { useApp } from "@/lib/context/AppContext";
 import { categoryById } from "@/lib/categories";
+import { formatCurrency, formatNumberBRL, parseCurrencyInput } from "@/lib/currency";
 
 export default function SettingsPage() {
   const app = useApp();
@@ -17,37 +18,25 @@ export default function SettingsPage() {
     // do localStorage, ou uma importação de backup) — não só na montagem, senão
     // um backup importado fica sem refletir nos campos até recarregar a página.
     // eslint-disable-next-line react-hooks/set-state-in-effect
-    setIncomeText(app.monthlyIncome.toFixed(2));
-    setContributionText(app.monthlyGoalContribution.toFixed(2));
+    setIncomeText(formatNumberBRL(app.monthlyIncome));
+    setContributionText(formatNumberBRL(app.monthlyGoalContribution));
   }, [app.monthlyIncome, app.monthlyGoalContribution]);
 
-  /**
-   * Converte o texto do campo em valor válido. Retorna null quando não dá para
-   * interpretar (campo vazio, texto solto, negativo) — nesses casos o valor
-   * salvo é mantido em vez de virar zero sem querer.
-   */
-  function parseMoney(text: string): number | null {
-    const normalized = text.trim().replace(",", ".");
-    if (normalized === "") return null;
-    const value = Number(normalized);
-    return Number.isFinite(value) && value >= 0 ? value : null;
-  }
-
   function saveIncome() {
-    const value = parseMoney(incomeText);
-    if (value === null) setIncomeText(app.monthlyIncome.toFixed(2));
+    const value = parseCurrencyInput(incomeText);
+    if (value === null) setIncomeText(formatNumberBRL(app.monthlyIncome));
     else app.setMonthlyIncome(value);
   }
 
   function saveContribution() {
-    const value = parseMoney(contributionText);
-    if (value === null) setContributionText(app.monthlyGoalContribution.toFixed(2));
+    const value = parseCurrencyInput(contributionText);
+    if (value === null) setContributionText(formatNumberBRL(app.monthlyGoalContribution));
     else app.setMonthlyGoalContribution(value);
   }
 
   function addFixed() {
-    const amount = Number(newAmount);
-    if (newTitle.trim() && amount > 0) {
+    const amount = parseCurrencyInput(newAmount);
+    if (newTitle.trim() && amount !== null && amount > 0) {
       app.addFixedExpense(newTitle.trim(), amount);
       setNewTitle("");
       setNewAmount("");
@@ -91,30 +80,30 @@ export default function SettingsPage() {
     for (const e of sortedExpenses) {
       const label = categoryById(app.categories, e.category).label;
       const date = new Date(e.date).toLocaleDateString("pt-BR");
-      rows.push([date, label, e.amount.toFixed(2), e.note ?? ""].map(csvEscape).join(";"));
+      rows.push([date, label, formatNumberBRL(e.amount), e.note ?? ""].map(csvEscape).join(";"));
     }
     rows.push("");
 
     rows.push("GASTOS FIXOS");
     rows.push(["Nome", "Valor (R$)"].map(csvEscape).join(";"));
     for (const f of app.fixedExpenses) {
-      rows.push([f.title, f.amount.toFixed(2)].map(csvEscape).join(";"));
+      rows.push([f.title, formatNumberBRL(f.amount)].map(csvEscape).join(";"));
     }
     rows.push("");
 
     rows.push("CATEGORIAS");
     rows.push(["Nome", "Limite Mensal (R$)"].map(csvEscape).join(";"));
     for (const c of app.categories) {
-      rows.push([c.label, c.monthlyBudgetLimit > 0 ? c.monthlyBudgetLimit.toFixed(2) : ""].map(csvEscape).join(";"));
+      rows.push([c.label, c.monthlyBudgetLimit > 0 ? formatNumberBRL(c.monthlyBudgetLimit) : ""].map(csvEscape).join(";"));
     }
     rows.push("");
 
     rows.push("RESUMO");
-    rows.push(["Renda Mensal", app.monthlyIncome.toFixed(2)].map(csvEscape).join(";"));
-    rows.push(["Total Gastos Fixos", app.totalFixedExpenses.toFixed(2)].map(csvEscape).join(";"));
+    rows.push(["Renda Mensal", formatNumberBRL(app.monthlyIncome)].map(csvEscape).join(";"));
+    rows.push(["Total Gastos Fixos", formatNumberBRL(app.totalFixedExpenses)].map(csvEscape).join(";"));
     rows.push(["Meta", app.goalTitle].map(csvEscape).join(";"));
-    rows.push(["Valor Alvo da Meta", app.targetAmount.toFixed(2)].map(csvEscape).join(";"));
-    rows.push(["Já Guardado", app.currentSaved.toFixed(2)].map(csvEscape).join(";"));
+    rows.push(["Valor Alvo da Meta", formatNumberBRL(app.targetAmount)].map(csvEscape).join(";"));
+    rows.push(["Já Guardado", formatNumberBRL(app.currentSaved)].map(csvEscape).join(";"));
 
     const bom = String.fromCharCode(0xfeff);
     const csvContent = bom + rows.join("\r\n");
@@ -207,7 +196,7 @@ export default function SettingsPage() {
             <div key={item.id} className="flex items-center justify-between rounded-xl bg-black/30 px-3 py-2.5">
               <span className="text-sm text-white">{item.title}</span>
               <div className="flex items-center gap-3">
-                <span className="text-sm font-semibold text-primary">R$ {item.amount.toFixed(2)}</span>
+                <span className="text-sm font-semibold text-primary">{formatCurrency(item.amount)}</span>
                 <button
                   onClick={() => app.removeFixedExpense(item.id)}
                   className="text-gray-500 hover:text-danger"
@@ -248,7 +237,7 @@ export default function SettingsPage() {
         </div>
       </section>
 
-      <p className="text-center text-xs text-gray-500">Total de gastos fixos: R$ {app.totalFixedExpenses.toFixed(2)}</p>
+      <p className="text-center text-xs text-gray-500">Total de gastos fixos: {formatCurrency(app.totalFixedExpenses)}</p>
 
       <section className="rounded-3xl bg-white/5 p-5">
         <h2 className="mb-1 text-xs font-bold uppercase tracking-wide text-gray-400">Backup dos Dados</h2>
