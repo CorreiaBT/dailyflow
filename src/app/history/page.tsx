@@ -2,8 +2,10 @@
 
 import { useMemo, useState } from "react";
 import { ChevronLeft, ChevronRight, Trash2, Receipt } from "lucide-react";
+import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { useApp } from "@/lib/context/AppContext";
-import { categoryBreakdown, expensesInMonth, formatMonthLabel, monthKey, shiftMonth } from "@/lib/history";
+import { categoryById } from "@/lib/categories";
+import { categoryBreakdown, expensesInMonth, formatMonthLabel, monthKey, monthlyTotals, shiftMonth } from "@/lib/history";
 
 export default function HistoryPage() {
   const app = useApp();
@@ -21,6 +23,8 @@ export default function HistoryPage() {
   );
   const monthTotal = monthExpenses.reduce((sum, e) => sum + e.amount, 0);
   const isCurrentMonth = selectedMonth === currentMonthKey;
+
+  const trend = useMemo(() => monthlyTotals(app.dailyExpenses, 6), [app.dailyExpenses]);
 
   const sortedExpenses = useMemo(
     () => [...monthExpenses].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()),
@@ -63,6 +67,30 @@ export default function HistoryPage() {
         </p>
       </div>
 
+      {/* Tendência dos últimos meses */}
+      <div className="rounded-3xl border border-white/10 bg-surface p-5">
+        <h2 className="mb-3 font-semibold text-white">Tendência (Últimos 6 Meses)</h2>
+        <ResponsiveContainer width="100%" height={140}>
+          <BarChart data={trend} margin={{ left: 0, right: 0 }}>
+            <CartesianGrid strokeDasharray="2 2" stroke="rgba(255,255,255,0.1)" vertical={false} />
+            <XAxis dataKey="shortLabel" tick={{ fill: "#9ca3af", fontSize: 11 }} axisLine={false} tickLine={false} />
+            <YAxis
+              tickFormatter={(v) => (v >= 1000 ? `${Math.round(v / 1000)}k` : `${v}`)}
+              tick={{ fill: "#9ca3af", fontSize: 11 }}
+              axisLine={false}
+              tickLine={false}
+              width={32}
+            />
+            <Tooltip
+              contentStyle={{ background: "#0d0b07", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 12 }}
+              formatter={(value) => `R$ ${Number(value).toFixed(2)}`}
+              cursor={{ fill: "rgba(255,255,255,0.05)" }}
+            />
+            <Bar dataKey="total" fill="#d9b95c" radius={[6, 6, 0, 0]} />
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
+
       {/* Ranking por categoria */}
       <div>
         <h2 className="mb-3 font-semibold text-white">Gastos por Categoria</h2>
@@ -74,26 +102,35 @@ export default function HistoryPage() {
           </div>
         ) : (
           <div className="flex flex-col gap-3 rounded-3xl border border-white/10 bg-white/5 p-5">
-            {breakdown.map((cat, i) => (
-              <div key={cat.categoryId}>
-                <div className="mb-1.5 flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <span className="emoji-tint text-base">{cat.emoji}</span>
-                    <span className="text-sm font-medium text-white">{cat.label}</span>
+            {breakdown.map((cat, i) => {
+              const limit = categoryById(app.categories, cat.categoryId).monthlyBudgetLimit;
+              const overBudget = limit > 0 && cat.total > limit;
+              return (
+                <div key={cat.categoryId}>
+                  <div className="mb-1.5 flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className="emoji-tint text-base">{cat.emoji}</span>
+                      <span className="text-sm font-medium text-white">{cat.label}</span>
+                    </div>
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-xs text-gray-500">{(cat.ratio * 100).toFixed(0)}%</span>
+                      <span className="text-sm font-semibold text-white">R$ {cat.total.toFixed(2)}</span>
+                    </div>
                   </div>
-                  <div className="flex items-baseline gap-2">
-                    <span className="text-xs text-gray-500">{(cat.ratio * 100).toFixed(0)}%</span>
-                    <span className="text-sm font-semibold text-white">R$ {cat.total.toFixed(2)}</span>
+                  <div className="h-1.5 w-full rounded-full bg-white/10">
+                    <div
+                      className={`h-1.5 rounded-full ${overBudget ? "bg-danger" : i === 0 ? "bg-primary" : "bg-secondary"}`}
+                      style={{ width: `${Math.max(cat.ratio * 100, 3)}%` }}
+                    />
                   </div>
+                  {limit > 0 && (
+                    <p className={`mt-1 text-[11px] ${overBudget ? "text-danger" : "text-gray-500"}`}>
+                      {overBudget ? "Acima" : "Dentro"} do limite mensal de R$ {limit.toFixed(2)}
+                    </p>
+                  )}
                 </div>
-                <div className="h-1.5 w-full rounded-full bg-white/10">
-                  <div
-                    className={`h-1.5 rounded-full ${i === 0 ? "bg-primary" : "bg-secondary"}`}
-                    style={{ width: `${Math.max(cat.ratio * 100, 3)}%` }}
-                  />
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>

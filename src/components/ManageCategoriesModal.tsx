@@ -10,11 +10,13 @@ export function ManageCategoriesModal({ onClose }: { onClose: () => void }) {
   const app = useApp();
   const [label, setLabel] = useState("");
   const [emoji, setEmoji] = useState("🛒");
+  const [budget, setBudget] = useState("");
 
   function handleAdd() {
     if (label.trim() && emoji.trim()) {
-      app.addCategory(label.trim(), emoji.trim());
+      app.addCategory(label.trim(), emoji.trim(), Number(budget) || 0);
       setLabel("");
+      setBudget("");
     }
   }
 
@@ -31,26 +33,42 @@ export function ManageCategoriesModal({ onClose }: { onClose: () => void }) {
           </button>
         </div>
 
-        <div className="no-scrollbar mb-5 flex max-h-52 flex-col gap-2 overflow-y-auto">
+        <div className="no-scrollbar mb-2 flex max-h-56 flex-col gap-2 overflow-y-auto">
           {app.categories.map((cat) => (
             <div key={cat.id} className="flex items-center justify-between rounded-xl bg-black/30 px-3 py-2.5">
               <div className="flex items-center gap-2.5">
                 <span className="emoji-tint text-lg">{cat.emoji}</span>
                 <span className="text-sm text-white">{cat.label}</span>
               </div>
-              <button
-                onClick={() => app.removeCategory(cat.id)}
-                className="text-gray-600 hover:text-danger"
-                aria-label={`Excluir categoria ${cat.label}`}
-              >
-                <Trash2 size={15} />
-              </button>
+              <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1 rounded-lg bg-black/40 px-2 py-1.5">
+                  <span className="text-[10px] text-gray-500">R$</span>
+                  <input
+                    key={`${cat.id}-${cat.monthlyBudgetLimit}`}
+                    defaultValue={cat.monthlyBudgetLimit > 0 ? cat.monthlyBudgetLimit : ""}
+                    onBlur={(e) => app.setCategoryBudget(cat.id, Number(e.target.value) || 0)}
+                    inputMode="decimal"
+                    placeholder="sem limite"
+                    className="w-16 bg-transparent text-right text-xs text-white outline-none placeholder:text-gray-600"
+                  />
+                </div>
+                <button
+                  onClick={() => app.removeCategory(cat.id)}
+                  className="text-gray-600 hover:text-danger"
+                  aria-label={`Excluir categoria ${cat.label}`}
+                >
+                  <Trash2 size={15} />
+                </button>
+              </div>
             </div>
           ))}
           {app.categories.length === 0 && (
             <p className="text-sm text-gray-500">Nenhuma categoria cadastrada ainda.</p>
           )}
         </div>
+        <p className="mb-5 text-[11px] text-gray-500">
+          Defina um limite mensal opcional por categoria pra receber alertas quando o ritmo de gasto passar do seguro.
+        </p>
 
         <p className="mb-2 text-xs font-bold uppercase tracking-wide text-gray-400">Nova categoria</p>
         <div className="mb-3 flex gap-2">
@@ -67,6 +85,13 @@ export function ManageCategoriesModal({ onClose }: { onClose: () => void }) {
             className="flex-1 rounded-xl bg-black/40 px-3 py-2.5 text-white outline-none focus:ring-2 focus:ring-primary/50"
           />
         </div>
+        <input
+          value={budget}
+          onChange={(e) => setBudget(e.target.value)}
+          inputMode="decimal"
+          placeholder="Limite mensal R$ (opcional)"
+          className="mb-3 w-full rounded-xl bg-black/40 px-3 py-2.5 text-white outline-none focus:ring-2 focus:ring-primary/50"
+        />
 
         <div className="mb-5 flex flex-wrap gap-2">
           {EMOJI_SUGGESTIONS.map((e) => (

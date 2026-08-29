@@ -50,10 +50,12 @@ interface AppContextValue extends PersistedState {
   removeFixedExpense: (id: string) => void;
   addDailyExpense: (amount: number, categoryId: string, note?: string) => void;
   removeDailyExpense: (id: string) => void;
-  addCategory: (label: string, emoji: string) => void;
+  addCategory: (label: string, emoji: string, monthlyBudgetLimit?: number) => void;
   removeCategory: (id: string) => void;
+  setCategoryBudget: (id: string, limit: number) => void;
   setGoal: (goal: { title: string; targetAmount: number; currentSaved: number }) => void;
   setSelectedAsset: (asset: InvestmentAssetType) => void;
+  importData: (data: Partial<PersistedState>) => void;
 
   totalFixedExpenses: number;
   monthlyFreeBudget: number;
@@ -166,22 +168,32 @@ export function AppProvider({ children }: { children: ReactNode }) {
     removeDailyExpense: (id) =>
       setState((s) => ({ ...s, dailyExpenses: s.dailyExpenses.filter((e) => e.id !== id) })),
 
-    addCategory: (label, emoji) =>
+    addCategory: (label, emoji, monthlyBudgetLimit = 0) =>
       setState((s) => ({
         ...s,
         categories: [
           ...s.categories,
-          { id: crypto.randomUUID(), label, emoji, isFlexible: true, monthlyBudgetLimit: 0 },
+          { id: crypto.randomUUID(), label, emoji, isFlexible: true, monthlyBudgetLimit },
         ],
       })),
 
     removeCategory: (id) =>
       setState((s) => ({ ...s, categories: s.categories.filter((c) => c.id !== id) })),
 
+    setCategoryBudget: (id, limit) =>
+      setState((s) => ({
+        ...s,
+        categories: s.categories.map((c) =>
+          c.id === id ? { ...c, monthlyBudgetLimit: Math.max(0, limit) } : c
+        ),
+      })),
+
     setGoal: ({ title, targetAmount, currentSaved }) =>
       setState((s) => ({ ...s, goalTitle: title, targetAmount, currentSaved })),
 
     setSelectedAsset: (asset) => setState((s) => ({ ...s, selectedAsset: asset })),
+
+    importData: (data) => setState((s) => ({ ...s, ...data })),
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

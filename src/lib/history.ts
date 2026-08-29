@@ -36,6 +36,28 @@ export function expensesInMonth(expenses: DailyExpense[], key: string): DailyExp
   return expenses.filter((e) => monthKey(new Date(e.date)) === key);
 }
 
+export interface MonthTotal {
+  key: string;
+  shortLabel: string;
+  total: number;
+}
+
+/** Total gasto (variável) em cada um dos últimos `monthsBack` meses, do mais antigo ao mais recente. */
+export function monthlyTotals(
+  expenses: DailyExpense[],
+  monthsBack: number,
+  referenceDate = new Date()
+): MonthTotal[] {
+  const baseKey = monthKey(referenceDate);
+  const result: MonthTotal[] = [];
+  for (let i = monthsBack - 1; i >= 0; i--) {
+    const key = shiftMonth(baseKey, -i);
+    const total = expensesInMonth(expenses, key).reduce((sum, e) => sum + e.amount, 0);
+    result.push({ key, shortLabel: formatMonthLabel(key).slice(0, 3), total });
+  }
+  return result;
+}
+
 export interface CategoryTotal {
   categoryId: string;
   label: string;

@@ -42,13 +42,34 @@ export default function InvestmentPage() {
   );
 
   const asset = INVESTMENT_ASSETS[app.selectedAsset];
+
+  const now = new Date();
+  const monthExpenses = useMemo(
+    () => expensesInMonth(app.dailyExpenses, monthKey(now)),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [app.dailyExpenses]
+  );
+  const totalSpentMonth = monthExpenses.reduce((sum, e) => sum + e.amount, 0);
+
+  const totalDaysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+  const daysElapsed = now.getDate();
+  const daysRemaining = totalDaysInMonth - daysElapsed;
+  const avgDailyVariableSpend = daysElapsed > 0 ? totalSpentMonth / daysElapsed : 0;
+  const projectedVariableSpend = totalSpentMonth + avgDailyVariableSpend * daysRemaining;
+  const projectedMonthBalance = app.monthlyIncome - app.totalFixedExpenses - projectedVariableSpend;
+
+  const savingsRate =
+    app.monthlyIncome > 0
+      ? (app.monthlyIncome - app.totalFixedExpenses - totalSpentMonth) / app.monthlyIncome
+      : 0;
+
   const monthCategoryTotals = useMemo(
     () =>
-      categoryBreakdown(expensesInMonth(app.dailyExpenses, monthKey(new Date())), app.categories).map((c) => ({
+      categoryBreakdown(monthExpenses, app.categories).map((c) => ({
         label: c.label,
         total: c.total,
       })),
-    [app.dailyExpenses, app.categories]
+    [monthExpenses, app.categories]
   );
 
   const advisorInput: AdvisorInput = {
@@ -86,6 +107,29 @@ export default function InvestmentPage() {
   return (
     <div className="mx-auto flex max-w-md flex-col gap-6 p-4">
       <h1 className="text-xl font-bold text-white">Projeção de Investimento</h1>
+
+      {/* Saúde Financeira do Mês */}
+      <div className="rounded-3xl border border-white/10 bg-white/5 p-5">
+        <p className="mb-3 text-xs font-bold uppercase tracking-wide text-gray-400">Saúde Financeira do Mês</p>
+        <div className="flex gap-3">
+          <div className="flex-1 rounded-xl bg-black/30 p-3">
+            <p className="text-[9px] font-bold tracking-wide text-gray-400">TAXA DE POUPANÇA</p>
+            <p className={`text-lg font-bold ${savingsRate >= 0 ? "text-primary" : "text-danger"}`}>
+              {(savingsRate * 100).toFixed(0)}%
+            </p>
+            <p className="text-[9px] text-gray-500">da renda, já reservado nesse mês</p>
+          </div>
+          <div className="flex-1 rounded-xl bg-black/30 p-3">
+            <p className="text-[9px] font-bold tracking-wide text-gray-400">PROJEÇÃO DE FIM DE MÊS</p>
+            <p className={`text-lg font-bold ${projectedMonthBalance >= 0 ? "text-primary" : "text-danger"}`}>
+              {currency(projectedMonthBalance)}
+            </p>
+            <p className="text-[9px] text-gray-500">
+              {projectedMonthBalance >= 0 ? "de sobra estimada" : "de déficit estimado"}
+            </p>
+          </div>
+        </div>
+      </div>
 
       <GoalDashboard />
 

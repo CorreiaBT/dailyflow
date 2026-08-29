@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { ChangeEvent, useEffect, useState } from "react";
 import { Trash2 } from "lucide-react";
 import { useApp } from "@/lib/context/AppContext";
 
@@ -37,6 +37,45 @@ export default function SettingsPage() {
       setNewTitle("");
       setNewAmount("");
     }
+  }
+
+  function exportBackup() {
+    const payload = {
+      monthlyIncome: app.monthlyIncome,
+      monthlyGoalContribution: app.monthlyGoalContribution,
+      fixedExpenses: app.fixedExpenses,
+      dailyExpenses: app.dailyExpenses,
+      categories: app.categories,
+      goalTitle: app.goalTitle,
+      targetAmount: app.targetAmount,
+      currentSaved: app.currentSaved,
+      selectedAsset: app.selectedAsset,
+    };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `dailyflow-backup-${new Date().toISOString().slice(0, 10)}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  function importBackup(e: ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const data = JSON.parse(String(reader.result));
+        if (!confirm("Isso vai substituir todos os dados atuais pelos dados desse backup. Continuar?")) return;
+        app.importData(data);
+        alert("Backup importado com sucesso!");
+      } catch {
+        alert("Não foi possível ler esse arquivo. Verifique se é um backup exportado por este app.");
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = "";
   }
 
   return (
@@ -127,6 +166,25 @@ export default function SettingsPage() {
       </section>
 
       <p className="text-center text-xs text-gray-500">Total de gastos fixos: R$ {app.totalFixedExpenses.toFixed(2)}</p>
+
+      <section className="rounded-3xl bg-white/5 p-5">
+        <h2 className="mb-1 text-xs font-bold uppercase tracking-wide text-gray-400">Backup dos Dados</h2>
+        <p className="mb-3 text-xs text-gray-500">
+          Seus dados ficam salvos só neste aparelho. Exporte um backup de vez em quando pra não correr o risco de perder tudo.
+        </p>
+        <div className="flex flex-col gap-2">
+          <button
+            onClick={exportBackup}
+            className="rounded-xl bg-primary/15 px-4 py-2.5 text-center font-bold text-primary hover:bg-primary/25"
+          >
+            Exportar Backup (.json)
+          </button>
+          <label className="cursor-pointer rounded-xl bg-white/10 px-4 py-2.5 text-center font-bold text-white hover:bg-white/20">
+            Importar Backup
+            <input type="file" accept="application/json" onChange={importBackup} className="hidden" />
+          </label>
+        </div>
+      </section>
     </div>
   );
 }
