@@ -3,6 +3,7 @@
 import { ChangeEvent, useEffect, useState } from "react";
 import { Trash2 } from "lucide-react";
 import { useApp } from "@/lib/context/AppContext";
+import { categoryById } from "@/lib/categories";
 
 export default function SettingsPage() {
   const app = useApp();
@@ -56,6 +57,58 @@ export default function SettingsPage() {
     const a = document.createElement("a");
     a.href = url;
     a.download = `dailyflow-backup-${new Date().toISOString().slice(0, 10)}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  function csvEscape(value: string | number): string {
+    const s = String(value);
+    return /[;"\r\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+  }
+
+  function exportExcel() {
+    const rows: string[] = [];
+
+    rows.push("LANÇAMENTOS DIÁRIOS");
+    rows.push(["Data", "Categoria", "Valor (R$)", "Observação"].map(csvEscape).join(";"));
+    const sortedExpenses = [...app.dailyExpenses].sort(
+      (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+    );
+    for (const e of sortedExpenses) {
+      const label = categoryById(app.categories, e.category).label;
+      const date = new Date(e.date).toLocaleDateString("pt-BR");
+      rows.push([date, label, e.amount.toFixed(2), e.note ?? ""].map(csvEscape).join(";"));
+    }
+    rows.push("");
+
+    rows.push("GASTOS FIXOS");
+    rows.push(["Nome", "Valor (R$)"].map(csvEscape).join(";"));
+    for (const f of app.fixedExpenses) {
+      rows.push([f.title, f.amount.toFixed(2)].map(csvEscape).join(";"));
+    }
+    rows.push("");
+
+    rows.push("CATEGORIAS");
+    rows.push(["Nome", "Limite Mensal (R$)"].map(csvEscape).join(";"));
+    for (const c of app.categories) {
+      rows.push([c.label, c.monthlyBudgetLimit > 0 ? c.monthlyBudgetLimit.toFixed(2) : ""].map(csvEscape).join(";"));
+    }
+    rows.push("");
+
+    rows.push("RESUMO");
+    rows.push(["Renda Mensal", app.monthlyIncome.toFixed(2)].map(csvEscape).join(";"));
+    rows.push(["Total Gastos Fixos", app.totalFixedExpenses.toFixed(2)].map(csvEscape).join(";"));
+    rows.push(["Meta", app.goalTitle].map(csvEscape).join(";"));
+    rows.push(["Valor Alvo da Meta", app.targetAmount.toFixed(2)].map(csvEscape).join(";"));
+    rows.push(["Já Guardado", app.currentSaved.toFixed(2)].map(csvEscape).join(";"));
+
+    const bom = String.fromCharCode(0xfeff);
+    const csvContent = bom + rows.join("\r\n");
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `dailyflow-planilha-${new Date().toISOString().slice(0, 10)}.csv`;
     a.click();
     URL.revokeObjectURL(url);
   }
@@ -170,7 +223,8 @@ export default function SettingsPage() {
       <section className="rounded-3xl bg-white/5 p-5">
         <h2 className="mb-1 text-xs font-bold uppercase tracking-wide text-gray-400">Backup dos Dados</h2>
         <p className="mb-3 text-xs text-gray-500">
-          Seus dados ficam salvos só neste aparelho. Exporte um backup de vez em quando pra não correr o risco de perder tudo.
+          Seus dados ficam salvos só neste aparelho. Exporte um backup completo pra restaurar depois, ou uma planilha
+          pra abrir no Excel e analisar seus gastos.
         </p>
         <div className="flex flex-col gap-2">
           <button
@@ -178,6 +232,12 @@ export default function SettingsPage() {
             className="rounded-xl bg-primary/15 px-4 py-2.5 text-center font-bold text-primary hover:bg-primary/25"
           >
             Exportar Backup (.json)
+          </button>
+          <button
+            onClick={exportExcel}
+            className="rounded-xl bg-secondary/15 px-4 py-2.5 text-center font-bold text-secondary hover:bg-secondary/25"
+          >
+            Exportar Planilha (Excel/.csv)
           </button>
           <label className="cursor-pointer rounded-xl bg-white/10 px-4 py-2.5 text-center font-bold text-white hover:bg-white/20">
             Importar Backup
