@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo } from "react";
-import { Sparkles, CheckCircle2, Wifi, ZapOff, RefreshCw } from "lucide-react";
+import { Sparkles, CheckCircle2, Wifi, ZapOff, RefreshCw, LoaderCircle } from "lucide-react";
 import {
   Area,
   CartesianGrid,
@@ -14,9 +14,12 @@ import {
 } from "recharts";
 import { useApp } from "@/lib/context/AppContext";
 import { useMarketData } from "@/lib/hooks/useMarketData";
+import { useAdvisor, AdvisorInput } from "@/lib/hooks/useAdvisor";
 import { GoalDashboard } from "@/components/GoalDashboard";
 import { InsightCardView } from "@/components/InsightCardView";
 import { generateInsights } from "@/lib/engines/insights";
+import { categoryBreakdown, expensesInMonth, monthKey } from "@/lib/history";
+import { INVESTMENT_ASSETS } from "@/lib/types";
 
 function currency(value: number): string {
   return `R$ ${value.toFixed(2)}`;
@@ -25,6 +28,7 @@ function currency(value: number): string {
 export default function InvestmentPage() {
   const app = useApp();
   const m = useMarketData();
+  const advisor = useAdvisor();
 
   useEffect(() => {
     m.loadCDIRate();
@@ -32,10 +36,46 @@ export default function InvestmentPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const insightCards = useMemo(
+  const fallbackCards = useMemo(
     () => generateInsights(app.dailyExpenses, app.monthlyIncome, app.totalFixedExpenses),
     [app.dailyExpenses, app.monthlyIncome, app.totalFixedExpenses]
   );
+
+  const asset = INVESTMENT_ASSETS[app.selectedAsset];
+  const monthCategoryTotals = useMemo(
+    () =>
+      categoryBreakdown(expensesInMonth(app.dailyExpenses, monthKey(new Date()))).map((c) => ({
+        label: c.label,
+        total: c.total,
+      })),
+    [app.dailyExpenses]
+  );
+
+  const advisorInput: AdvisorInput = {
+    monthlyIncome: app.monthlyIncome,
+    totalFixedExpenses: app.totalFixedExpenses,
+    monthlyFreeBudget: app.monthlyFreeBudget,
+    monthlyGoalContribution: app.monthlyGoalContribution,
+    todaySpentTotal: app.todaySpentTotal,
+    idealDailyAllowance: app.idealDailyAllowance,
+    cdiRate: m.cdiRate,
+    goal: {
+      title: app.goalTitle,
+      targetAmount: app.targetAmount,
+      currentSaved: app.currentSaved,
+      assetLabel: asset.label,
+      annualRatePct: asset.annualRatePct,
+    },
+    categoryBreakdown: monthCategoryTotals,
+  };
+
+  useEffect(() => {
+    advisor.fetchTips(advisorInput);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const usingAi = advisor.status === "success" && advisor.tips !== null;
+  const insightCards = usingAi ? advisor.tips! : fallbackCards;
 
   const chartData = m.projectionPoints.map((p) => ({
     mes: `${p.month}m`,
@@ -208,12 +248,39 @@ export default function InvestmentPage() {
         )}
       </div>
 
-      {/* Feed de Insights */}
+      {/* Consultor de Investimentos */}
       <div>
-        <div className="mb-3 flex items-center gap-2">
-          <Sparkles size={16} className="text-yellow-400" />
-          <h2 className="font-semibold text-white">Feed de Insights Diários</h2>
+        <div className="mb-3 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Sparkles size={16} className="text-secondary" />
+            <h2 className="font-semibold text-white">Consultor de Investimentos</h2>
+          </div>
+          <div className="flex items-center gap-2">
+            <span
+              className={`rounded-lg px-2 py-0.5 text-[10px] font-bold ${
+                usingAi ? "bg-secondary/15 text-secondary" : "bg-white/10 text-gray-400"
+              }`}
+            >
+              {usingAi ? "IA" : "Regras locais"}
+            </span>
+            <button
+              onClick={() => advisor.fetchTips(advisorInput, true)}
+              disabled={advisor.status === "loading"}
+              className="rounded-full bg-white/10 p-1.5 text-white hover:bg-white/20 disabled:opacity-40"
+              aria-label="Atualizar dicas"
+            >
+              {advisor.status === "loading" ? (
+                <LoaderCircle size={14} className="animate-spin" />
+              ) : (
+                <RefreshCw size={14} />
+              )}
+            </button>
+          </div>
         </div>
+
+        {advisor.status === "error" && (
+          <p className="mb-2 text-xs text-danger">Não foi possível consultar a IA agora ({advisor.errorMessage}). Mostrando dicas locais.</p>
+        )}
 
         {insightCards.length === 0 ? (
           <div className="flex items-center gap-2 rounded-2xl bg-white/5 p-4">
