@@ -33,7 +33,7 @@ export default function HistoryPage() {
   );
 
   return (
-    <div className="mx-auto flex max-w-md flex-col gap-6 p-4">
+    <div className="animate-page-in mx-auto flex max-w-md flex-col gap-6 p-4">
       <h1 className="text-xl font-bold text-white">Histórico</h1>
 
       {/* Navegação de mês */}
@@ -61,7 +61,9 @@ export default function HistoryPage() {
         <p className="text-xs font-bold tracking-wide text-gray-400">TOTAL GASTO NO MÊS</p>
         <div className="mb-1 flex items-baseline gap-1">
           <span className="text-xl font-bold text-primary">R$</span>
-          <span className="text-4xl font-bold text-white">{formatNumberBRL(monthTotal)}</span>
+          <span key={monthTotal} className="animate-value-pulse text-4xl font-bold text-white">
+            {formatNumberBRL(monthTotal)}
+          </span>
         </div>
         <p className="text-xs text-gray-500">
           {monthExpenses.length} {monthExpenses.length === 1 ? "compra" : "compras"} · não inclui gastos fixos

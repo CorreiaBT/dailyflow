@@ -5,6 +5,7 @@ import { Trash2 } from "lucide-react";
 import { useApp } from "@/lib/context/AppContext";
 import { categoryById } from "@/lib/categories";
 import { formatCurrency, formatNumberBRL, parseCurrencyInput } from "@/lib/currency";
+import { SHOW_TUTORIAL_EVENT } from "@/components/WelcomeTutorial";
 
 export default function SettingsPage() {
   const app = useApp();
@@ -151,7 +152,7 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="mx-auto flex max-w-md flex-col gap-5 p-4">
+    <div className="animate-page-in mx-auto flex max-w-md flex-col gap-5 p-4">
       <h1 className="text-xl font-bold text-white">Configurações</h1>
 
       <section className="rounded-3xl bg-white/5 p-5">
@@ -229,7 +230,7 @@ export default function SettingsPage() {
             />
             <button
               onClick={addFixed}
-              className="rounded-xl bg-primary/15 px-4 py-2.5 font-bold text-primary hover:bg-primary/25"
+              className="rounded-xl bg-primary/15 px-4 py-2.5 font-bold text-primary transition-transform hover:bg-primary/25 active:scale-95"
             >
               Adicionar
             </button>
@@ -264,6 +265,13 @@ export default function SettingsPage() {
           </label>
         </div>
       </section>
+
+      <button
+        onClick={() => window.dispatchEvent(new Event(SHOW_TUTORIAL_EVENT))}
+        className="flex items-center justify-center gap-2 rounded-3xl bg-white/5 px-5 py-3.5 text-center text-sm font-semibold text-gray-300 transition-colors hover:bg-white/10"
+      >
+        <span className="emoji-tint">❓</span> Ver tutorial de boas-vindas novamente
+      </button>
     </div>
   );
 }

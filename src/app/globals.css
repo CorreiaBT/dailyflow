@@ -29,6 +29,22 @@ html {
 body {
   background: var(--background);
   color: var(--foreground);
+  position: relative;
+}
+
+/* Fundo com textura de grade pontilhada (grid de "papel milimetrado"
+   financeiro) — dá profundidade e remete a gráfico, sem ser mais um
+   blur/glow genérico. Sutil o bastante pra não competir com o conteúdo. */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image: radial-gradient(rgba(217, 185, 92, 0.16) 1px, transparent 1px);
+  background-size: 26px 26px;
+  mask-image: radial-gradient(ellipse 90% 70% at 50% 0%, #000 45%, transparent 100%);
+  -webkit-mask-image: radial-gradient(ellipse 90% 70% at 50% 0%, #000 45%, transparent 100%);
 }
 
 /* Esconde a barra de rolagem dos carrosséis horizontais mantendo o scroll funcional */
@@ -49,4 +65,118 @@ body {
   display: inline-flex;
   line-height: 1;
   filter: grayscale(1) sepia(1) saturate(6) hue-rotate(-8deg) brightness(1.1);
+}
+
+/* ── Animações ── */
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes sheetIn {
+  from { opacity: 0; transform: translateY(24px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes wave {
+  0%, 100% { transform: rotate(0deg); }
+  20% { transform: rotate(16deg); }
+  40% { transform: rotate(-10deg); }
+  60% { transform: rotate(12deg); }
+}
+@keyframes valuePulse {
+  0% { transform: scale(1); }
+  35% { transform: scale(1.08); }
+  100% { transform: scale(1); }
+}
+@keyframes shimmer {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(100%); }
+}
+@keyframes flowScroll {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+@keyframes barGrow {
+  0%, 100% { transform: scaleY(1); }
+  50% { transform: scaleY(1.25); }
+}
+
+/* Linha de "flow" ascendente que desliza lentamente no fundo, ecoando o
+   gráfico de acúmulo do app — a identidade da marca, não um efeito genérico. */
+.bg-flow-line {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  overflow: hidden;
+  opacity: 0.1;
+}
+.bg-flow-line svg {
+  position: absolute;
+  bottom: 8%;
+  left: 0;
+  height: 26vh;
+  width: 200%;
+  max-width: none;
+  animation: flowScroll 40s linear infinite;
+}
+
+.logo-bar {
+  transform-origin: bottom;
+  animation: barGrow 1.8s ease-in-out infinite;
+}
+
+/* Entrada da página inteira ao navegar entre abas */
+.animate-page-in {
+  animation: fadeUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* Escalonamento dos cards diretos dentro da página */
+.animate-page-in > * {
+  animation: fadeUp 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.animate-page-in > *:nth-child(1) { animation-delay: 0.02s; }
+.animate-page-in > *:nth-child(2) { animation-delay: 0.08s; }
+.animate-page-in > *:nth-child(3) { animation-delay: 0.14s; }
+.animate-page-in > *:nth-child(4) { animation-delay: 0.2s; }
+.animate-page-in > *:nth-child(5) { animation-delay: 0.26s; }
+.animate-page-in > *:nth-child(6) { animation-delay: 0.32s; }
+
+.animate-sheet-in {
+  animation: sheetIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.animate-fade-up {
+  opacity: 0;
+  animation: fadeUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-wave {
+  transform-origin: 70% 70%;
+  animation: wave 1.8s ease-in-out infinite;
+}
+
+.animate-value-pulse {
+  display: inline-block;
+  animation: valuePulse 0.4s ease;
+}
+
+.progress-shimmer {
+  position: relative;
+  overflow: hidden;
+}
+.progress-shimmer::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.35), transparent);
+  animation: shimmer 2.4s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
 }

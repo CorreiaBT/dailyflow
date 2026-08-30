@@ -57,12 +57,17 @@ export function GoalDashboard() {
           </button>
         </div>
         <p className="mb-4">
-          <span className="text-lg font-bold text-secondary">{currency(app.currentSaved)}</span>{" "}
+          <span key={app.currentSaved} className="animate-value-pulse text-lg font-bold text-secondary">
+            {currency(app.currentSaved)}
+          </span>{" "}
           <span className="text-xs text-gray-400">de {currency(app.targetAmount)}</span>
         </p>
 
-        <div className="mb-4 h-2 w-full rounded-full bg-white/10">
-          <div className="h-2 rounded-full bg-secondary" style={{ width: `${progressRatio * 100}%` }} />
+        <div className="progress-shimmer mb-4 h-2 w-full rounded-full bg-white/10">
+          <div
+            className="h-2 rounded-full bg-secondary transition-[width] duration-500 ease-out"
+            style={{ width: `${progressRatio * 100}%` }}
+          />
         </div>
 
         <p className="mb-2 text-[10px] font-bold tracking-wide text-gray-400">SELECIONE O TIPO DE INVESTIMENTO</p>
@@ -75,7 +80,7 @@ export function GoalDashboard() {
                 key={assetId}
                 onClick={() => app.setSelectedAsset(assetId)}
                 aria-pressed={selected}
-                className={`rounded-2xl border p-2.5 text-left ${
+                className={`rounded-2xl border p-2.5 text-left transition-all duration-200 hover:-translate-y-0.5 active:scale-95 ${
                   selected ? "border-secondary bg-secondary/15" : "border-white/10 bg-white/5"
                 }`}
               >
@@ -158,7 +163,7 @@ function EditGoalSheet({ onClose }: { onClose: () => void }) {
   return (
     <div className="fixed inset-0 z-[60] flex items-end justify-center bg-black/60 sm:items-center" onClick={onClose}>
       <div
-        className="w-full max-w-md rounded-t-3xl bg-surface p-6 pb-[calc(env(safe-area-inset-bottom)+1.5rem)] sm:rounded-3xl"
+        className="animate-sheet-in w-full max-w-md rounded-t-3xl bg-surface p-6 pb-[calc(env(safe-area-inset-bottom)+1.5rem)] sm:rounded-3xl"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="mb-5 flex items-center justify-between">

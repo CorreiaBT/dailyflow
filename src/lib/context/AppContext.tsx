@@ -29,18 +29,14 @@ interface PersistedState {
 // IDs de seed fixos (não aleatórios) para que o estado inicial seja idêntico
 // entre a renderização no servidor e a hidratação no cliente.
 const defaultState: PersistedState = {
-  monthlyIncome: 4500,
-  monthlyGoalContribution: 500,
-  fixedExpenses: [
-    { id: "seed-fixed-1", title: "Aluguel & Condomínio", amount: 1600, dueDate: 1 },
-    { id: "seed-fixed-2", title: "Contas (Luz, Net, Água)", amount: 450, dueDate: 1 },
-    { id: "seed-fixed-3", title: "Assinaturas & Cartão Fixo", amount: 350, dueDate: 1 },
-  ],
+  monthlyIncome: 0,
+  monthlyGoalContribution: 0,
+  fixedExpenses: [],
   dailyExpenses: [] as DailyExpense[],
   categories: DEFAULT_EXPENSE_CATEGORIES,
-  goalTitle: "Reserva de Emergência",
-  targetAmount: 50000,
-  currentSaved: 5000,
+  goalTitle: "Minha Meta",
+  targetAmount: 0,
+  currentSaved: 0,
   selectedAsset: "cdb",
 };
 

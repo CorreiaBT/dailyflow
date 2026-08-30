@@ -27,7 +27,11 @@ export function BottomNav() {
                 active ? "text-primary" : "text-gray-500"
               }`}
             >
-              <Icon size={20} strokeWidth={active ? 2.5 : 2} />
+              <Icon
+                size={20}
+                strokeWidth={active ? 2.5 : 2}
+                className={`transition-transform duration-200 ${active ? "scale-110" : "scale-100"}`}
+              />
               {label}
             </Link>
           );

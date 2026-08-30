@@ -66,7 +66,7 @@ export function KeypadModal({ categories, initialCategoryId, onClose, onConfirm 
   return (
     <div className="fixed inset-0 z-[60] flex items-end justify-center bg-black/60 sm:items-center" onClick={onClose}>
       <div
-        className="w-full max-w-md rounded-t-3xl bg-surface p-6 pb-[calc(env(safe-area-inset-bottom)+1.5rem)] sm:rounded-3xl"
+        className="animate-sheet-in w-full max-w-md rounded-t-3xl bg-surface p-6 pb-[calc(env(safe-area-inset-bottom)+1.5rem)] sm:rounded-3xl"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="mb-5 flex items-center justify-between">
@@ -101,7 +101,7 @@ export function KeypadModal({ categories, initialCategoryId, onClose, onConfirm 
               key={`${key}-${i}`}
               onClick={() => handleKey(key)}
               aria-label={key === "⌫" ? "Apagar último dígito" : key === "," ? "Vírgula decimal" : key}
-              className={`rounded-2xl bg-white/[0.08] py-4 text-xl font-bold ${
+              className={`rounded-2xl bg-white/[0.08] py-4 text-xl font-bold transition-transform active:scale-90 ${
                 key === "⌫" ? "text-danger" : "text-white"
               }`}
             >

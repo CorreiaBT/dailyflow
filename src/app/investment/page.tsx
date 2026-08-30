@@ -89,7 +89,7 @@ export default function InvestmentPage() {
   const insightCards = usingAi ? advisor.tips! : fallbackCards;
 
   return (
-    <div className="mx-auto flex max-w-md flex-col gap-6 p-4">
+    <div className="animate-page-in mx-auto flex max-w-md flex-col gap-6 p-4">
       <h1 className="text-xl font-bold text-white">Projeção de Investimento</h1>
 
       {/* Saúde Financeira do Mês */}

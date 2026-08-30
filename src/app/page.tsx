@@ -33,7 +33,7 @@ export default function HomePage() {
   );
 
   return (
-    <div className="mx-auto flex max-w-md flex-col gap-6 p-4">
+    <div className="animate-page-in mx-auto flex max-w-md flex-col gap-6 p-4">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
@@ -53,12 +53,17 @@ export default function HomePage() {
         <p className="mb-1 text-xs font-bold tracking-wide text-gray-400">DISPONÍVEL PARA GASTAR HOJE</p>
         <div className="mb-3 flex items-baseline gap-1">
           <span className="text-xl font-bold text-primary">R$</span>
-          <span className="text-4xl font-bold text-white">{formatNumberBRL(app.remainingTodayAllowance)}</span>
+          <span
+            key={app.remainingTodayAllowance}
+            className="animate-value-pulse text-4xl font-bold text-white"
+          >
+            {formatNumberBRL(app.remainingTodayAllowance)}
+          </span>
         </div>
 
-        <div className="mb-3 h-2 w-full rounded-full bg-white/10">
+        <div className="progress-shimmer mb-3 h-2 w-full rounded-full bg-white/10">
           <div
-            className={`h-2 rounded-full ${app.todaySpentRatio > 0.85 ? "bg-danger" : "bg-primary"}`}
+            className={`h-2 rounded-full transition-[width] duration-500 ease-out ${app.todaySpentRatio > 0.85 ? "bg-danger" : "bg-primary"}`}
             style={{ width: `${app.todaySpentRatio * 100}%` }}
           />
         </div>
@@ -102,7 +107,7 @@ export default function HomePage() {
               return (
                 <div
                   key={expense.id}
-                  className="flex items-center justify-between rounded-2xl bg-white/5 px-3.5 py-3"
+                  className="animate-fade-up flex items-center justify-between rounded-2xl bg-white/5 px-3.5 py-3 transition-colors hover:bg-white/[0.07]"
                 >
                   <div className="flex items-center gap-3">
                     <span className="emoji-tint text-xl">{expense.emoji}</span>
